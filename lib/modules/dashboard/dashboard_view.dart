@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:sizer/sizer.dart';
 import 'dart:math' as math;
 import '../../core/utils/toast_util.dart';
+import '../../widgets/dashboard_shimmers.dart';
 import 'controller/attendance_summary_controller.dart';
 
 class DashboardView extends StatefulWidget {
@@ -92,91 +92,207 @@ class _DashboardViewState extends State<DashboardView>
     super.dispose();
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required Color color,
-    required IconData icon,
-    int? index,
-  }) {
-    return TweenAnimationBuilder<double>(
-      duration: Duration(milliseconds: 700 + (index ?? 0) * 150),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOutBack,
-      builder: (context, animValue, child) {
-        return Transform.scale(
-          scale: animValue,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: color.withOpacity(0.2), width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // drawer: const AppDrawer(),
+      backgroundColor: const Color(0xFFF6F8FA),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Dashboard",
+              style: TextStyle(
+                color: const Color(0xFF2d3436),
+                fontSize: 20.sp,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            padding: EdgeInsets.all(4.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(2.w),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [color, color.withOpacity(0.7)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+          ],
+        ),
+        centerTitle: false,
+      ),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: RefreshIndicator(
+            color: const Color(0xFF00b894), // primary
+            onRefresh: _onRefresh,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(4.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Option 1: Donut Chart for Students
+                  Obx(() {
+                    if (summaryController.isLoading.value &&
+                        !summaryController.hasData) {
+                      return DashboardShimmers.donutChart();
+
+                    }
+
+                    return _buildDonutChartCard(
+                      title: "Students Attendance",
+                      present: summaryController.presentStudent.value ?? 0,
+                      late: summaryController.lateStudent.value ?? 0,
+                      absent: summaryController.absentStudent.value ?? 0,
+                      total: summaryController.student.value ?? 0,
+                      color: const Color(0xFF667eea),
+                      icon: Icons.school,
+                      index: 0,
+                    );
+                  }),
+
+                  SizedBox(height: 2.5.h),
+
+                  // Option 2: Bar Chart for Staff
+                  Obx(() {
+                    if (summaryController.isLoading.value &&
+                        !summaryController.hasData) {
+                      return DashboardShimmers.barChart();
+
+                    }
+
+                    return _buildBarChartCard(
+                      title: "Staff Attendance",
+                      present: summaryController.presentStaff.value ?? 0,
+                      late: summaryController.lateStaff.value ?? 0,
+                      absent: summaryController.absentStaff.value ?? 0,
+                      total: summaryController.staff.value ?? 0,
+                      color: const Color(0xFF00b894),
+                      icon: Icons.badge,
+                      index: 1,
+                    );
+                  }),
+
+                  SizedBox(height: 3.h),
+
+                  // Quick Stats Header
+                  Row(
+                    children: [
+                      Container(
+                        width: 1.w,
+                        height: 3.h,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      SizedBox(width: 2.w),
+                      Text(
+                        "Quick Statistics",
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2d3436),
+                        ),
                       ),
                     ],
                   ),
-                  child: Icon(icon, color: Colors.white, size: 6.w),
-                ),
-                const Spacer(),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2d3436),
-                  ),
-                ),
-                // SizedBox(height: 0.5.h),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+
+                  SizedBox(height: 2.h),
+
+                  // Stats Grid
+                  Obx(() {
+                    if (summaryController.isLoading.value &&
+                        !summaryController.hasData) {
+                      return DashboardShimmers.statsGrid();
+                    }
+
+                    return GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 3.w,
+                      mainAxisSpacing: 2.5.h,
+                      childAspectRatio: 1.15,
+                      children: [
+                        _buildStatCard(
+                          title: "Total Students",
+                          value: "${summaryController.student.value ?? 0}",
+                          color: const Color(0xFF667eea),
+                          icon: Icons.school,
+                        ),
+                        _buildStatCard(
+                          title: "Total Staff",
+                          value: "${summaryController.staff.value ?? 0}",
+                          color: const Color(0xFF00b894),
+                          icon: Icons.people,
+                        ),
+                        _buildStatCard(
+                          title: "Present Students",
+                          value:
+                              "${summaryController.presentStudent.value ?? 0}",
+                          color: const Color(0xFF55efc4),
+                          icon: Icons.check_circle,
+                        ),
+                        _buildStatCard(
+                          title: "Absent Students",
+                          value:
+                              "${summaryController.absentStudent.value ?? 0}",
+                          color: const Color(0xFFff7675),
+                          icon: Icons.cancel,
+                        ),
+                        _buildStatCard(
+                          title: "Present Staff",
+                          value: "${summaryController.presentStaff.value ?? 0}",
+                          color: const Color(0xFF74b9ff),
+                          icon: Icons.badge,
+                        ),
+                        _buildStatCard(
+                          title: "Absent Staff",
+                          value: "${summaryController.absentStaff.value ?? 0}",
+                          color: const Color(0xFFfdcb6e),
+                          icon: Icons.warning,
+                        ),
+                        _buildStatCard(
+                          title: "Late Students",
+                          value: "${summaryController.lateStudent.value ?? 0}",
+                          color: Colors.orange,
+                          icon: Icons.access_time,
+                        ),
+                        _buildStatCard(
+                          title: "Late Staff",
+                          value: "${summaryController.lateStaff.value ?? 0}",
+                          color: Colors.deepOrange,
+                          icon: Icons.schedule,
+                        ),
+
+                      ],
+                    );
+                  }),
+
+                  SizedBox(height: 2.h),
+                ],
+              ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
+
+
 
   // Option 1: Donut Chart Card
   Widget _buildDonutChartCard({
     required String title,
     required int present,
+    required int late,
+    required int absent,
     required int total,
     required Color color,
     required IconData icon,
     int? index,
   }) {
-    final absent = total - present;
-    // final percentage = (present / total * 100).toInt();
     final safeTotal = total == 0 ? 1 : total;
     final percentage = ((present / safeTotal) * 100).round();
 
@@ -303,14 +419,21 @@ class _DashboardViewState extends State<DashboardView>
                               color,
                               Icons.check_circle,
                             ),
-                            SizedBox(height: 2.h),
+                            SizedBox(height: 1.h),
+                            _buildMiniStat(
+                              "Late",
+                              "$late",
+                              Colors.orange,
+                              Icons.access_time,
+                            ),
+                            SizedBox(height: 1.h),
                             _buildMiniStat(
                               "Absent",
                               "$absent",
                               Colors.red,
                               Icons.cancel,
                             ),
-                            SizedBox(height: 2.h),
+                            SizedBox(height: 1.h),
                             _buildMiniStat(
                               "Total",
                               "$total",
@@ -331,16 +454,91 @@ class _DashboardViewState extends State<DashboardView>
     );
   }
 
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required Color color,
+    required IconData icon,
+    int? index,
+  }) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 700 + (index ?? 0) * 150),
+      tween: Tween(begin: 0.0, end: 1.0),
+      curve: Curves.easeOutBack,
+      builder: (context, animValue, child) {
+        return Transform.scale(
+          scale: animValue,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withOpacity(0.2), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            padding: EdgeInsets.all(4.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(2.w),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withOpacity(0.7)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 6.w),
+                ),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2d3436),
+                  ),
+                ),
+                // SizedBox(height: 0.5.h),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // Option 2: Bar Chart Card
   Widget _buildBarChartCard({
     required String title,
     required int present,
+    required int late,
+    required int absent,
     required int total,
     required Color color,
     required IconData icon,
     int? index,
   }) {
-    final absent = total - present;
     final safeTotal = total == 0 ? 1 : total;
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 800 + (index ?? 0) * 200),
@@ -416,7 +614,6 @@ class _DashboardViewState extends State<DashboardView>
                                 ),
                                 SizedBox(height: 1.h),
                                 Container(
-                                  // height: (present / total) * 15.h * _chartAnimation.value,
                                   height: (present / safeTotal) * 15.h * _chartAnimation.value,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -443,6 +640,39 @@ class _DashboardViewState extends State<DashboardView>
                             ),
                           ),
                           SizedBox(width: 4.w),
+                          // Late Bar
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  "$late",
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 1.h),
+                                Container(
+                                  height: (late / safeTotal) * 15.h * _chartAnimation.value,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                SizedBox(height: 1.h),
+                                Text(
+                                  "Late",
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 4.w),
                           // Absent Bar
                           Expanded(
                             child: Column(
@@ -457,8 +687,7 @@ class _DashboardViewState extends State<DashboardView>
                                 ),
                                 SizedBox(height: 1.h),
                                 Container(
-                                  // height: (absent / total) * 15.h * _chartAnimation.value,
-                                  height: (absent / safeTotal) * 15.h * _chartAnimation.value,
+                                  height: (absent / total) * 15.h * _chartAnimation.value,
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.5),
                                     borderRadius: BorderRadius.circular(10),
@@ -523,11 +752,11 @@ class _DashboardViewState extends State<DashboardView>
   }
 
   Widget _buildMiniStat(
-    String label,
-    String value,
-    Color color,
-    IconData icon,
-  ) {
+      String label,
+      String value,
+      Color color,
+      IconData icon,
+      ) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
       decoration: BoxDecoration(
@@ -562,227 +791,6 @@ class _DashboardViewState extends State<DashboardView>
       ),
     );
   }
-
-  Widget _buildDonutChartShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: Container(
-        height: 32.h,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBarChartShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: Container(
-        height: 30.h,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsGridShimmer() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 3.w,
-      mainAxisSpacing: 2.5.h,
-      childAspectRatio: 1.15,
-      children: List.generate(
-        6,
-        (_) => Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
-          highlightColor: Colors.grey.shade100,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // drawer: const AppDrawer(),
-      backgroundColor: const Color(0xFFF6F8FA),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Dashboard",
-              style: TextStyle(
-                color: const Color(0xFF2d3436),
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        centerTitle: false,
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: RefreshIndicator(
-            color: const Color(0xFF00b894), // primary
-            onRefresh: _onRefresh,
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(4.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Option 1: Donut Chart for Students
-                  Obx(() {
-                    if (summaryController.isLoading.value &&
-                        !summaryController.hasData) {
-                      return _buildDonutChartShimmer();
-                    }
-
-                    return _buildDonutChartCard(
-                      title: "Students Attendance",
-                      present: summaryController.presentStudent.value ?? 0,
-                      total: summaryController.student.value ?? 0,
-                      color: const Color(0xFF667eea),
-                      icon: Icons.school,
-                      index: 0,
-                    );
-                  }),
-
-                  SizedBox(height: 2.5.h),
-
-                  // Option 2: Bar Chart for Staff
-                  Obx(() {
-                    if (summaryController.isLoading.value &&
-                        !summaryController.hasData) {
-                      return _buildBarChartShimmer();
-                    }
-
-                    return _buildBarChartCard(
-                      title: "Staff Attendance",
-                      present: summaryController.presentStaff.value ?? 0,
-                      total: summaryController.staff.value ?? 0,
-                      color: const Color(0xFF00b894),
-                      icon: Icons.badge,
-                      index: 1,
-                    );
-                  }),
-
-                  SizedBox(height: 3.h),
-
-                  // Quick Stats Header
-                  Row(
-                    children: [
-                      Container(
-                        width: 1.w,
-                        height: 3.h,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        "Quick Statistics",
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2d3436),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 2.h),
-
-                  // Stats Grid
-                  Obx(() {
-                    if (summaryController.isLoading.value &&
-                        !summaryController.hasData) {
-                      return _buildStatsGridShimmer();
-                    }
-
-                    return GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 3.w,
-                      mainAxisSpacing: 2.5.h,
-                      childAspectRatio: 1.15,
-                      children: [
-                        _buildStatCard(
-                          title: "Total Students",
-                          value: "${summaryController.student.value ?? 0}",
-                          color: const Color(0xFF667eea),
-                          icon: Icons.school,
-                        ),
-                        _buildStatCard(
-                          title: "Total Staff",
-                          value: "${summaryController.staff.value ?? 0}",
-                          color: const Color(0xFF00b894),
-                          icon: Icons.people,
-                        ),
-                        _buildStatCard(
-                          title: "Present Students",
-                          value:
-                              "${summaryController.presentStudent.value ?? 0}",
-                          color: const Color(0xFF55efc4),
-                          icon: Icons.check_circle,
-                        ),
-                        _buildStatCard(
-                          title: "Absent Students",
-                          value:
-                              "${summaryController.absentStudent.value ?? 0}",
-                          color: const Color(0xFFff7675),
-                          icon: Icons.cancel,
-                        ),
-                        _buildStatCard(
-                          title: "Present Staff",
-                          value: "${summaryController.presentStaff.value ?? 0}",
-                          color: const Color(0xFF74b9ff),
-                          icon: Icons.badge,
-                        ),
-                        _buildStatCard(
-                          title: "Absent Staff",
-                          value: "${summaryController.absentStaff.value ?? 0}",
-                          color: const Color(0xFFfdcb6e),
-                          icon: Icons.warning,
-                        ),
-                      ],
-                    );
-                  }),
-
-                  SizedBox(height: 2.h),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // Custom Donut Chart Painter
@@ -805,9 +813,6 @@ class DonutChartPainter extends CustomPainter {
     final radius = size.width / 2;
     final strokeWidth = 20.0;
 
-    // final total = present + absent;
-    // final presentAngle = (present / total) * 2 * math.pi * animationValue;
-    // final absentAngle = (absent / total) * 2 * math.pi * animationValue;
     final total = present + absent;
     if (total == 0) return; // ✅ critical fix
 

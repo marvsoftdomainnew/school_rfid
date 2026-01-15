@@ -1,41 +1,42 @@
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
 import '../../../core/services/network_exceptions.dart';
 import '../../../core/utils/snackbar_util.dart';
-import '../../../data/models/responses/staff_attendance_list_responce.dart';
-import '../../../data/repositories/staff_attendance_list_repository.dart';
-
-enum ReportPeriod { daily, weekly, monthly }
+import '../../../data/models/responses/staff_attandance_report_response.dart';
+import '../../../data/repositories/staff_attendance_report_repository.dart';
 
 class StaffAttendanceReportController extends GetxController {
-  final StaffAttendanceListRepository _repository =
-  StaffAttendanceListRepository();
+  final StaffAttendanceReportRepository _repository =
+  StaffAttendanceReportRepository();
 
   // ================= STATE =================
   final isLoading = false.obs;
-  final selectedPeriod = ReportPeriod.daily.obs;
 
-  /// Raw API records
-  final records = <StaffAttendanceRecord>[].obs;
+  final records = <StaffReportRecord>[].obs;
+  final filteredRecords = <StaffReportRecord>[].obs;
 
-  /// Aggregated table rows (UI ready)
-  final reportRows = <StaffReportRow>[].obs;
+  final selectedPost = RxnString();
+  final fromDate = Rxn<DateTime>();
+  final toDate = Rxn<DateTime>();
 
   // ================= API =================
   Future<void> fetchReport() async {
     isLoading.value = true;
 
     try {
-      final response = await _repository.fetchStaffAttendance();
+      final StaffAttandanceReportResponse response =
+      await _repository.fetchStaffReport();
 
       if (response.success == true) {
         records.assignAll(response.records);
-        _generateReport();
+        applyFilters();
       } else {
-        SnackbarUtil.showError(
-          "Error",
-          "Failed to load attendance report",
-        );
+        SnackbarUtil.showError("Error", "Failed to load staff report");
       }
     } on DioException catch (e) {
       SnackbarUtil.showError(
@@ -47,91 +48,85 @@ class StaffAttendanceReportController extends GetxController {
     }
   }
 
-  // ================= PERIOD CHANGE =================
-  void changePeriod(ReportPeriod period) {
-    selectedPeriod.value = period;
-    _generateReport();
+  // ================= FILTER LOGIC =================
+  void applyFilters() {
+    filteredRecords.assignAll(
+      records.where((r) {
+        final matchPost = selectedPost.value == null ||
+            selectedPost.value!.isEmpty ||
+            r.userType == selectedPost.value;
+
+        final recordDate = r.attendanceDate;
+
+        final matchFrom = fromDate.value == null ||
+            (recordDate != null &&
+                !recordDate.isBefore(fromDate.value!));
+
+        final matchTo = toDate.value == null ||
+            (recordDate != null &&
+                !recordDate.isAfter(toDate.value!));
+
+        return matchPost && matchFrom && matchTo;
+      }).toList(),
+    );
   }
 
-  // ================= CORE LOGIC =================
-  void _generateReport() {
-    final Map<int, List<StaffAttendanceRecord>> grouped = {};
+  // ================= HELPERS =================
+  List<String> getPostList() {
+    final posts = records
+        .map((e) => e.userType)
+        .whereType<String>()
+        .toSet()
+        .toList();
+    posts.sort();
+    return posts;
+  }
 
-    for (final r in records) {
-      final staffId = r.staffId ?? r.userId;
-      if (staffId == null) continue;
-
-      if (!_isInSelectedPeriod(r.attendanceDate)) continue;
-
-      grouped.putIfAbsent(staffId, () => []).add(r);
+  // ================= PDF EXPORT =================
+  Future<void> exportPdf() async {
+    if (filteredRecords.isEmpty) {
+      SnackbarUtil.showError("No Data", "Nothing to export");
+      return;
     }
 
-    final List<StaffReportRow> rows = [];
+    final pdf = pw.Document();
 
-    grouped.forEach((staffId, list) {
-      final total = list.length;
-      final present =
-          list.where((e) => e.status == 'present').length;
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (_) => [
+          pw.Text(
+            "Staff Attendance Report",
+            style: pw.TextStyle(
+              fontSize: 18,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 16),
+          pw.Table.fromTextArray(
+            headers: ["Staff ID", "Post", "Present", "Total", "%"],
+            data: filteredRecords.map((r) {
+              final present = r.status == "present" ? 1 : 0;
+              final total = 1;
+              final percent = ((present / total) * 100).toStringAsFixed(0);
 
-      rows.add(
-        StaffReportRow(
-          staffId: staffId,
-          staffName: "Staff $staffId", // backend name later
-          role: list.first.userType ?? 'Staff',
-          present: present,
-          total: total,
-        ),
-      );
-    });
+              return [
+                r.staffId ?? "-",
+                r.userType ?? "-",
+                present.toString(),
+                total.toString(),
+                "$percent%",
+              ];
+            }).toList(),
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            cellAlignment: pw.Alignment.center,
+          ),
+        ],
+      ),
+    );
 
-    reportRows.assignAll(rows);
-  }
-
-  // ================= DATE FILTER =================
-  bool _isInSelectedPeriod(DateTime? date) {
-    if (date == null) return false;
-
-    final now = DateTime.now();
-
-    switch (selectedPeriod.value) {
-      case ReportPeriod.daily:
-        return _isSameDay(date, now);
-
-      case ReportPeriod.weekly:
-        return date.isAfter(
-          now.subtract(const Duration(days: 7)),
-        );
-
-      case ReportPeriod.monthly:
-        return date.year == now.year && date.month == now.month;
-    }
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year &&
-        a.month == b.month &&
-        a.day == b.day;
-  }
-}
-
-
-class StaffReportRow {
-  final int staffId;
-  final String staffName;
-  final String role;
-  final int present;
-  final int total;
-
-  StaffReportRow({
-    required this.staffId,
-    required this.staffName,
-    required this.role,
-    required this.present,
-    required this.total,
-  });
-
-  String get percentage {
-    if (total == 0) return "0";
-    return ((present / total) * 100).toStringAsFixed(0);
+    await Printing.layoutPdf(
+      onLayout: (_) async => pdf.save(),
+    );
   }
 }

@@ -1,55 +1,60 @@
-class StudentsAttendanceListResponse {
+class StaffAttandanceReportResponse {
   final bool success;
-  final List<AttendanceRecord> records;
+  final List<StaffReportRecord> records;
 
-  StudentsAttendanceListResponse({
+  StaffAttandanceReportResponse({
     required this.success,
     required this.records,
   });
 
-  factory StudentsAttendanceListResponse.fromJson(Map<String, dynamic> json) {
-    return StudentsAttendanceListResponse(
+  factory StaffAttandanceReportResponse.fromJson(Map<String, dynamic> json) {
+    return StaffAttandanceReportResponse(
       success: json['success'] == true,
       records: (json['records'] as List<dynamic>?)
-          ?.map((e) => AttendanceRecord.fromJson(e))
+          ?.map((e) => StaffReportRecord.fromJson(e))
           .toList() ??
           [],
     );
   }
 }
-class AttendanceRecord {
-  final int id;
-  final String userType;
-  final int userId;
+class StaffReportRecord {
+  final int? id;
+  final String? userType;
+  final int? userId;
   final int? adminId;
   final int? staffId;
+
   final String? className;
   final String? section;
+
   final DateTime? attendanceDate;
-  final String status;
+  final String? status;
+
   final String? inTime;
   final String? outTime;
   final int? workingMinutes;
+
   final String? rfidNumber;
   final String? entryMode;
   final String? deviceId;
   final String? ipAddress;
   final String? remarks;
+
   final DateTime? markedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
 
-  AttendanceRecord({
-    required this.id,
-    required this.userType,
-    required this.userId,
+  StaffReportRecord({
+    this.id,
+    this.userType,
+    this.userId,
     this.adminId,
     this.staffId,
     this.className,
     this.section,
     this.attendanceDate,
-    required this.status,
+    this.status,
     this.inTime,
     this.outTime,
     this.workingMinutes,
@@ -64,17 +69,17 @@ class AttendanceRecord {
     this.deletedAt,
   });
 
-  factory AttendanceRecord.fromJson(Map<String, dynamic> json) {
-    return AttendanceRecord(
-      id: _toInt(json['id']) ?? 0,
-      userType: json['user_type'] ?? '',
-      userId: _toInt(json['user_id']) ?? 0,
+  factory StaffReportRecord.fromJson(Map<String, dynamic> json) {
+    return StaffReportRecord(
+      id: _toInt(json['id']),
+      userType: json['user_type'],
+      userId: _toInt(json['user_id']),
       adminId: _toInt(json['admin_id']),
       staffId: _toInt(json['staff_id']),
       className: json['class'],
       section: json['section'],
       attendanceDate: _toDate(json['attendance_date']),
-      status: json['status'] ?? '',
+      status: json['status'],
       inTime: json['in_time'],
       outTime: json['out_time'],
       workingMinutes: _toInt(json['working_minutes']),
@@ -90,7 +95,7 @@ class AttendanceRecord {
     );
   }
 
-  /// ================= HELPERS =================
+  // ================= SAFE PARSERS =================
 
   static int? _toInt(dynamic value) {
     if (value == null) return null;

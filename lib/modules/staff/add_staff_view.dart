@@ -209,7 +209,7 @@ class _AddStaffViewState extends State<AddStaffView> {
               name: nameCtrl.text.trim(),
               father: fatherCtrl.text.trim(),
               mother: motherCtrl.text.trim(),
-              // designation: designationCtrl.text.trim(),
+              designation: designationCtrl.text.trim(),
               mobile: mobileCtrl.text.trim(),
               rfid: rfidCtrl.text.trim(),
             );
@@ -231,7 +231,7 @@ class _AddStaffViewState extends State<AddStaffView> {
                   _inputField("Staff Name", Icons.person, nameCtrl, controller.nameError),
                   _inputField("Father Name", Icons.person_outline, fatherCtrl, controller.fatherError),
                   _inputField("Mother Name", Icons.person_outline, motherCtrl, controller.motherError),
-                  // _inputField("Designation", Icons.work_outline, designationCtrl, controller.designationError),
+                  _inputField("Designation", Icons.work_outline, designationCtrl, controller.designationError),
                   _inputField(
                     "Mobile Number",
                     Icons.phone,

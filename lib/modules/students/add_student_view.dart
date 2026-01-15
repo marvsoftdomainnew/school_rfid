@@ -167,6 +167,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
+import '../../core/utils/text_input_formatters.dart';
 import '../../widgets/primary_button.dart';
 import 'controller/add_student_controller.dart';
 import 'package:flutter/services.dart';
@@ -188,6 +189,7 @@ class _AddStudentViewState extends State<AddStudentView> {
   final motherCtrl = TextEditingController();
   final classCtrl = TextEditingController();
   final sectionCtrl = TextEditingController();
+  final rollCtrl = TextEditingController();
   final mobileCtrl = TextEditingController();
   final rfidCtrl = TextEditingController();
 
@@ -256,6 +258,7 @@ class _AddStudentViewState extends State<AddStudentView> {
               mother: motherCtrl.text.trim(),
               studentClass: classCtrl.text.trim(),
               section: sectionCtrl.text.trim(),
+              rollNumber: rollCtrl.text.trim(),
               mobile: mobileCtrl.text.trim(),
               rfid: rfidCtrl.text.trim(),
             );
@@ -306,14 +309,16 @@ class _AddStudentViewState extends State<AddStudentView> {
                   _inputField("Student Name", Icons.person, nameCtrl, controller.nameError),
                   _inputField("Father Name", Icons.person_outline, fatherCtrl, controller.fatherError),
                   _inputField("Mother Name", Icons.person_outline, motherCtrl, controller.motherError),
-                  _inputField("Class", Icons.class_, classCtrl, controller.classError),
-                  _inputField("Section", Icons.layers, sectionCtrl, controller.sectionError),
-                  _inputField(
-                    "Mobile Number",
-                    Icons.phone,
-                    mobileCtrl,
-                    controller.mobileError,
-                    keyboardType: TextInputType.phone,
+                  _inputField("Class", Icons.class_, classCtrl, controller.classError,
+                    inputFormatters: [
+                    AlphaNumericUpperCaseFormatter(),
+                  ],),
+                  _inputField("Section", Icons.layers, sectionCtrl, controller.sectionError,
+                    inputFormatters: [
+                    UpperCaseTextFormatter(),
+                  ],),
+                  _inputField("Roll Number", Icons.confirmation_number, rollCtrl, controller.sectionError),
+                  _inputField("Mobile Number", Icons.phone, mobileCtrl, controller.mobileError, keyboardType: TextInputType.phone,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(10),
@@ -329,3 +334,5 @@ class _AddStudentViewState extends State<AddStudentView> {
     );
   }
 }
+
+

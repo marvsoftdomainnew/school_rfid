@@ -1,7 +1,344 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:schoolmsrfid/modules/staff/controller/staff_list_controller.dart';
+import 'package:schoolmsrfid/modules/staff/staff_detail_view.dart';
+import 'package:sizer/sizer.dart';
+import 'add_staff_view.dart';
+
+class StaffListView extends StatefulWidget {
+  const StaffListView({super.key});
+
+  @override
+  State<StaffListView> createState() => _StaffListViewState();
+}
+
+class _StaffListViewState extends State<StaffListView>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+
+  final StaffListController controller = Get.find<StaffListController>();
+
+  bool isSearching = false;
+  final TextEditingController searchController = TextEditingController();
+
+  String selectedPost = "All";
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..forward();
+
+    controller.fetchStaffs();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  // ================= FILTER =================
+  void _applyFilters() {
+    controller.applyFilters(
+      searchQuery: searchController.text,
+      selectedPost: selectedPost,
+    );
+  }
+
+  // ================= BUILD =================
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+
+      // ================= FAB (UNCHANGED) =================
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF00b894), Color(0xFF00cec9)],
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF00b894).withOpacity(0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            Get.to(() => const AddStaffView(),
+                transition: Transition.cupertino);
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: Text(
+            "Add Staff",
+            style: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+
+      body: Column(
+        children: [
+          _buildHeader(),
+          _buildPostFilter(),
+          Expanded(child: _buildGrid()),
+        ],
+      ),
+    );
+  }
+
+  // ================= HEADER =================
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(4.w, 6.h, 4.w, 1.h),
+      color: Colors.white,
+      child: Row(
+        children: [
+          Expanded(
+            child: isSearching
+                ? TextField(
+              controller: searchController,
+              autofocus: true,
+              onChanged: (value) {
+                _applyFilters();
+              },
+              decoration: InputDecoration(
+                hintText: "Search staff...",
+                border: InputBorder.none,
+                hintStyle: TextStyle(
+                  fontSize: 17.sp,
+                  color: Colors.grey[400],
+                ),
+              ),
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            )
+                : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Staffs",
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF2d3436),
+                  ),
+                ),
+                Obx(() => Text(
+                  "${controller.filteredStaffs.length} Total",
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Colors.grey[600],
+                  ),
+                )),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                if (isSearching) {
+                  isSearching = false;
+                  searchController.clear();
+
+                  controller.applyFilters(
+                    searchQuery: "",
+                    selectedPost: selectedPost,
+                  );
+                }
+                else {
+                  isSearching = true;
+                }
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.all(2.5.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00b894).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isSearching ? Icons.close : Icons.search,
+                color: const Color(0xFF00b894),
+                size: 5.w,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= POST DROPDOWN =================
+  Widget _buildPostFilter() {
+    return Obx(() {
+      if (controller.staffs.isEmpty) return const SizedBox();
+
+      final posts = controller.getPostList();
+
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+        child: DropdownButtonFormField<String>(
+          value: selectedPost,
+          items: posts
+              .map(
+                (e) => DropdownMenuItem(
+              value: e,
+              child: Text(e),
+            ),
+          )
+              .toList(),
+          onChanged: (v) {
+            setState(() => selectedPost = v!);
+            _applyFilters();
+          },
+          decoration: InputDecoration(
+            labelText: "Post",
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  // ================= GRID + ANIMATION =================
+  Widget _buildGrid() {
+    return Obx(() {
+      if (controller.isLoading.value && controller.staffs.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return GridView.builder(
+            padding: EdgeInsets.all(4.w),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 5.w,
+              mainAxisSpacing: 1.h,
+              childAspectRatio: 0.75,
+            ),
+            itemCount: controller.filteredStaffs.length,
+            itemBuilder: (context, index) {
+              final staff = controller.filteredStaffs[index];
+
+              return TweenAnimationBuilder<double>(
+                duration: Duration(milliseconds: 300 + (index * 15)),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: value,
+                    child: Opacity(
+                      opacity: value,
+                      child: _buildStaffItem(staff, index),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    });
+  }
+
+  // ================= STAFF ITEM =================
+  Widget _buildStaffItem(Map<String, dynamic> staff, int index) {
+    const ringColor = Color(0xFF00b894);
+    const iconColor = Color(0xFF00b894);
+    const textColor = Color(0xFF2d3436);
+
+    return GestureDetector(
+      onTap: () {
+        Get.to(
+              () => StaffDetailView(staffData: staff),
+          transition: Transition.cupertino,
+        );
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 16.w,
+            height: 16.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              border: Border.all(color: ringColor, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: ringColor.withOpacity(0.35),
+                  blurRadius: 7,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.person,
+              size: 7.w,
+              color: iconColor,
+            ),
+          ),
+          SizedBox(height: 0.5.h),
+          Text(
+            staff['post'] ?? '',
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              color: textColor.withOpacity(0.85),
+            ),
+          ),
+          SizedBox(height: 0.4.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 2.w),
+            child: Text(
+              staff['name'] ?? '',
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
+// import 'package:schoolmsrfid/modules/staff/controller/staff_list_controller.dart';
 // import 'package:schoolmsrfid/modules/staff/staff_detail_view.dart';
 // import 'package:sizer/sizer.dart';
+// import '../../core/utils/toast_util.dart';
 // import 'add_staff_view.dart';
 //
 // class StaffListView extends StatefulWidget {
@@ -16,17 +353,24 @@
 //   late AnimationController _animationController;
 //   bool isSearching = false;
 //   final TextEditingController searchController = TextEditingController();
-//   late List<Map<String, dynamic>> filteredStaffList;
+//
+//   final StaffAttendanceListController controller = Get.find<StaffAttendanceListController>();
 //
 //   @override
 //   void initState() {
 //     super.initState();
+//
 //     _animationController = AnimationController(
 //       vsync: this,
 //       duration: const Duration(milliseconds: 1000),
-//     );
-//     _animationController.forward();
-//     filteredStaffList = List.from(staffList);
+//     )..forward();
+//
+//     controller.fetchStaffs();
+//   }
+//
+//   Future<void> _onRefresh() async {
+//     await controller.fetchStaffs();
+//     ToastUtil.success("List updated");
 //   }
 //
 //   @override
@@ -35,58 +379,216 @@
 //     super.dispose();
 //   }
 //
-//   // Sample staff data - Replace with your actual data
-//   final List<Map<String, dynamic>> staffList = List.generate(50, (index) {
-//     // For demo: first 5 are present, rest are absent
-//     bool isPresent = index < 5;
-//
-//     return {
-//       'id': index + 1,
-//       'name': 'Staff ${index + 1}',
-//       'designation': _getDesignation(index),
-//       'isPresent': isPresent,
-//     };
-//   });
-//
-//   void _filterStaff(String query) {
-//     final lowerQuery = query.toLowerCase();
-//
-//     setState(() {
-//       filteredStaffList = staffList.where((staff) {
-//         return staff['name'].toLowerCase().contains(lowerQuery) ||
-//             staff['designation'].toLowerCase().contains(lowerQuery);
-//       }).toList();
-//     });
-//   }
-//
-//
-//   static String _getDesignation(int index) {
-//     final designations = ['Teacher', 'Principal', 'Librarian', 'Clerk', 'Peon'];
-//     return designations[index % designations.length];
-//   }
-//
 //   void _onStaffTap(int index) {
 //     Get.to(
 //           () => StaffDetailView(
-//         staffData: filteredStaffList[index],
+//         staffData: controller.filteredStaffs[index],
 //       ),
 //       transition: Transition.cupertino,
 //       duration: const Duration(milliseconds: 300),
 //     );
 //   }
 //
+//   // ================= HEADER =================
+//   Widget _buildCustomHeader() {
+//     return Container(
+//       padding: EdgeInsets.fromLTRB(4.w, 6.h, 4.w, 1.h),
+//       color: Colors.white,
+//       child: Row(
+//         children: [
+//           Expanded(
+//             child: isSearching
+//                 ? TextField(
+//               controller: searchController,
+//               autofocus: true,
+//               onChanged: controller.filter,
+//               decoration: InputDecoration(
+//                 hintText: "Search staff...",
+//                 border: InputBorder.none,
+//                 hintStyle: TextStyle(
+//                   fontSize: 17.sp,
+//                   color: Colors.grey[400],
+//                 ),
+//               ),
+//               style: TextStyle(
+//                 fontSize: 15.sp,
+//                 fontWeight: FontWeight.w500,
+//               ),
+//             )
+//                 : Obx(() {
+//               return Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     "Staffs",
+//                     style: TextStyle(
+//                       fontSize: 18.sp,
+//                       fontWeight: FontWeight.bold,
+//                       color: const Color(0xFF2d3436),
+//                     ),
+//                   ),
+//                   Text(
+//                     "${controller.filteredStaffs.where((s) => s['isPresent']).length} "
+//                         "Present / ${controller.filteredStaffs.length} Total",
+//                     style: TextStyle(
+//                       fontSize: 13.sp,
+//                       color: Colors.grey[600],
+//                     ),
+//                   ),
+//                 ],
+//               );
+//             }),
+//           ),
+//           GestureDetector(
+//             onTap: () {
+//               setState(() {
+//                 if (isSearching) {
+//                   isSearching = false;
+//                   searchController.clear();
+//                   controller.filteredStaffs.assignAll(controller.staffs);
+//                 } else {
+//                   isSearching = true;
+//                 }
+//               });
+//             },
+//             child: Container(
+//               padding: EdgeInsets.all(2.5.w),
+//               decoration: BoxDecoration(
+//                 color: const Color(0xFF00b894).withOpacity(0.1),
+//                 shape: BoxShape.circle,
+//               ),
+//               child: Icon(
+//                 isSearching ? Icons.close : Icons.search,
+//                 color: const Color(0xFF00b894),
+//                 size: 5.w,
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+//
+//   // ================= GRID =================
+//   Widget _buildGrid() {
+//     return Obx(() {
+//       if (controller.isLoading.value && controller.staffs.isEmpty) {
+//         return const Center(child: CircularProgressIndicator());
+//       }
+//
+//       return RefreshIndicator(
+//         color: const Color(0xFF00b894),
+//         onRefresh: _onRefresh,
+//         child: AnimatedBuilder(
+//           animation: _animationController,
+//           builder: (context, child) {
+//             return GridView.builder(
+//               physics: const AlwaysScrollableScrollPhysics(),
+//               padding: EdgeInsets.all(4.w),
+//               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//                 crossAxisCount: 4,
+//                 crossAxisSpacing: 5.w,
+//                 mainAxisSpacing: 1.h,
+//                 childAspectRatio: 0.75,
+//               ),
+//               itemCount: controller.filteredStaffs.length,
+//               itemBuilder: (context, index) {
+//                 final staff = controller.filteredStaffs[index];
+//                 return TweenAnimationBuilder<double>(
+//                   duration: Duration(milliseconds: 300 + (index * 15)),
+//                   tween: Tween(begin: 0.0, end: 1.0),
+//                   builder: (context, animValue, child) {
+//                     return Transform.scale(
+//                       scale: animValue,
+//                       child: Opacity(
+//                         opacity: animValue,
+//                         child: _buildStaffItem(staff, index),
+//                       ),
+//                     );
+//                   },
+//                 );
+//               },
+//             );
+//           },
+//         ),
+//       );
+//     });
+//   }
+//
+//   // ================= ITEM =================
+//   Widget _buildStaffItem(Map<String, dynamic> staff, int index) {
+//     final isPresent = staff['isPresent'];
+//
+//     final ringColor =
+//     isPresent ? const Color(0xFF00b894) : Colors.grey[400]!;
+//     final iconColor =
+//     isPresent ? const Color(0xFF00b894) : Colors.grey[600]!;
+//     final textColor =
+//     isPresent ? const Color(0xFF2d3436) : Colors.grey[700]!;
+//
+//     return GestureDetector(
+//       onTap: () => _onStaffTap(index),
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Container(
+//             width: 16.w,
+//             height: 16.w,
+//             decoration: BoxDecoration(
+//               shape: BoxShape.circle,
+//               color: Colors.white,
+//               border: Border.all(color: ringColor, width: 2),
+//               boxShadow: isPresent
+//                   ? [
+//                 BoxShadow(
+//                   color: ringColor.withOpacity(0.35),
+//                   blurRadius: 7,
+//                   spreadRadius: 1,
+//                 ),
+//               ]
+//                   : [],
+//             ),
+//             child: Icon(
+//               Icons.person,
+//               size: 7.w,
+//               color: iconColor,
+//             ),
+//           ),
+//           SizedBox(height: 0.5.h),
+//           Text(
+//             staff['designation'],
+//             maxLines: 1,
+//             overflow: TextOverflow.ellipsis,
+//             style: TextStyle(
+//               fontSize: 12.sp,
+//               fontWeight: FontWeight.w500,
+//               color: textColor.withOpacity(0.85),
+//             ),
+//           ),
+//           SizedBox(height: 0.4.h),
+//           Text(
+//             staff['name'],
+//             maxLines: 1,
+//             overflow: TextOverflow.ellipsis,
+//             style: TextStyle(
+//               fontSize: 13.sp,
+//               fontWeight: FontWeight.bold,
+//               color: textColor,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 //
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       backgroundColor: const Color(0xFFFFFFFF),
+//       backgroundColor: Colors.white,
 //       floatingActionButton: Container(
 //         decoration: BoxDecoration(
 //           gradient: const LinearGradient(
-//             colors: [
-//               Color(0xFF00b894),
-//               Color(0xFF00cec9),
-//             ],
+//             colors: [Color(0xFF00b894), Color(0xFF00cec9)],
 //           ),
 //           borderRadius: BorderRadius.circular(18),
 //           boxShadow: [
@@ -123,494 +625,4 @@
 //       ),
 //     );
 //   }
-//   Widget _buildCustomHeader() {
-//     return Container(
-//       padding: EdgeInsets.fromLTRB(4.w, 6.h, 4.w, 1.h),
-//       color: Colors.white,
-//       child: Row(
-//         children: [
-//           Expanded(
-//             child: isSearching
-//                 ? TextField(
-//               controller: searchController,
-//               autofocus: true,
-//               onChanged: _filterStaff,
-//               decoration: InputDecoration(
-//                 hintText: "Search staff...",
-//                 border: InputBorder.none,
-//                 hintStyle: TextStyle(
-//                   fontSize: 17.sp,
-//                   color: Colors.grey[400],
-//                 ),
-//               ),
-//               style: TextStyle(
-//                 fontSize: 15.sp,
-//                 fontWeight: FontWeight.w500,
-//               ),
-//             )
-//                 : Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   "Staffs",
-//                   style: TextStyle(
-//                     fontSize: 18.sp,
-//                     fontWeight: FontWeight.bold,
-//                     color: const Color(0xFF2d3436),
-//                   ),
-//                 ),
-//                 // SizedBox(height: 0.4.h),
-//                 Text(
-//                   "${filteredStaffList.where((s) => s['isPresent']).length} Present / ${filteredStaffList.length} Total",
-//                   style: TextStyle(
-//                     fontSize: 13.sp,
-//                     color: Colors.grey[600],
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//
-//           GestureDetector(
-//             onTap: () {
-//               setState(() {
-//                 if (isSearching) {
-//                   // close search
-//                   isSearching = false;
-//                   searchController.clear();
-//                   filteredStaffList = List.from(staffList);
-//                 } else {
-//                   // open search
-//                   isSearching = true;
-//                 }
-//               });
-//             },
-//             child: Container(
-//               padding: EdgeInsets.all(2.5.w),
-//               decoration: BoxDecoration(
-//                 color: const Color(0xFF00b894).withOpacity(0.1),
-//                 shape: BoxShape.circle,
-//               ),
-//               child: Icon(
-//                 isSearching ? Icons.close : Icons.search,
-//                 color: const Color(0xFF00b894),
-//                 size: 5.w,
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   Widget _buildGrid() {
-//     return AnimatedBuilder(
-//       animation: _animationController,
-//       builder: (context, child) {
-//         return GridView.builder(
-//           padding: EdgeInsets.all(4.w),
-//           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-//             crossAxisCount: 4,
-//             crossAxisSpacing: 5.w,
-//             mainAxisSpacing: 1.h,
-//             childAspectRatio: 0.75,
-//           ),
-//           itemCount: filteredStaffList.length,
-//           itemBuilder: (context, index) {
-//             final staff = filteredStaffList[index];
-//             return TweenAnimationBuilder<double>(
-//               duration: Duration(milliseconds: 300 + (index * 15)),
-//               tween: Tween(begin: 0.0, end: 1.0),
-//               builder: (context, animValue, child) {
-//                 return Transform.scale(
-//                   scale: animValue,
-//                   child: Opacity(
-//                     opacity: animValue,
-//                     child: _buildStaffItem(staff, index),
-//                   ),
-//                 );
-//               },
-//             );
-//           },
-//         );
-//       },
-//     );
-//   }
-//
-//
-//   Widget _buildStaffItem(Map<String, dynamic> staff, int index) {
-//     final isPresent = staff['isPresent'];
-//
-//     final ringColor =
-//     isPresent ? const Color(0xFF00b894) : Colors.grey[400]!;
-//     final iconColor =
-//     isPresent ? const Color(0xFF00b894) : Colors.grey[600]!;
-//     final textColor =
-//     isPresent ? const Color(0xFF2d3436) : Colors.grey[700]!;
-//
-//     return GestureDetector(
-//       onTap: () => _onStaffTap(index),
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           // ===== STATUS CIRCLE ONLY =====
-//           Container(
-//             width: 16.w,
-//             height: 16.w,
-//             decoration: BoxDecoration(
-//               shape: BoxShape.circle,
-//               color: Colors.white,
-//               border: Border.all(
-//                 color: ringColor,
-//                 width: 2,
-//               ),
-//               boxShadow: isPresent
-//                   ? [
-//                 BoxShadow(
-//                   color: ringColor.withOpacity(0.35),
-//                   blurRadius: 7,
-//                   spreadRadius: 1,
-//                 ),
-//               ]
-//                   : [],
-//             ),
-//             child: Icon(
-//               Icons.person,
-//               size: 7.w,
-//               color: iconColor,
-//             ),
-//           ),
-//
-//           SizedBox(height: 0.5.h),
-//
-//           // ===== DESIGNATION =====
-//           Text(
-//             staff['designation'],
-//             textAlign: TextAlign.center,
-//             maxLines: 1,
-//             overflow: TextOverflow.ellipsis,
-//             style: TextStyle(
-//               fontSize: 12.sp,
-//               fontWeight: FontWeight.w500,
-//               color: textColor.withOpacity(0.85),
-//             ),
-//           ),
-//
-//           SizedBox(height: 0.4.h),
-//
-//           // ===== NAME =====
-//           Padding(
-//             padding: EdgeInsets.symmetric(horizontal: 2.w),
-//             child: Text(
-//               staff['name'],
-//               textAlign: TextAlign.center,
-//               maxLines: 1,
-//               overflow: TextOverflow.ellipsis,
-//               style: TextStyle(
-//                 fontSize: 13.sp,
-//                 fontWeight: FontWeight.bold,
-//                 color: textColor,
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
 // }
-
-
-
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:schoolmsrfid/modules/staff/controller/staff_attendance_list_controller.dart';
-import 'package:schoolmsrfid/modules/staff/staff_detail_view.dart';
-import 'package:sizer/sizer.dart';
-import '../../core/utils/toast_util.dart';
-import 'add_staff_view.dart';
-
-class StaffListView extends StatefulWidget {
-  const StaffListView({super.key});
-
-  @override
-  State<StaffListView> createState() => _StaffListViewState();
-}
-
-class _StaffListViewState extends State<StaffListView>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  bool isSearching = false;
-  final TextEditingController searchController = TextEditingController();
-
-  final StaffAttendanceListController controller = Get.find<StaffAttendanceListController>();
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    )..forward();
-
-    controller.fetchStaffs();
-  }
-
-  Future<void> _onRefresh() async {
-    await controller.fetchStaffs();
-    ToastUtil.success("List updated");
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _onStaffTap(int index) {
-    Get.to(
-          () => StaffDetailView(
-        staffData: controller.filteredStaffs[index],
-      ),
-      transition: Transition.cupertino,
-      duration: const Duration(milliseconds: 300),
-    );
-  }
-
-  // ================= HEADER =================
-  Widget _buildCustomHeader() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(4.w, 6.h, 4.w, 1.h),
-      color: Colors.white,
-      child: Row(
-        children: [
-          Expanded(
-            child: isSearching
-                ? TextField(
-              controller: searchController,
-              autofocus: true,
-              onChanged: controller.filter,
-              decoration: InputDecoration(
-                hintText: "Search staff...",
-                border: InputBorder.none,
-                hintStyle: TextStyle(
-                  fontSize: 17.sp,
-                  color: Colors.grey[400],
-                ),
-              ),
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            )
-                : Obx(() {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Staffs",
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2d3436),
-                    ),
-                  ),
-                  Text(
-                    "${controller.filteredStaffs.where((s) => s['isPresent']).length} "
-                        "Present / ${controller.filteredStaffs.length} Total",
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              );
-            }),
-          ),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                if (isSearching) {
-                  isSearching = false;
-                  searchController.clear();
-                  controller.filteredStaffs.assignAll(controller.staffs);
-                } else {
-                  isSearching = true;
-                }
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.all(2.5.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF00b894).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isSearching ? Icons.close : Icons.search,
-                color: const Color(0xFF00b894),
-                size: 5.w,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ================= GRID =================
-  Widget _buildGrid() {
-    return Obx(() {
-      if (controller.isLoading.value && controller.staffs.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      return RefreshIndicator(
-        color: const Color(0xFF00b894),
-        onRefresh: _onRefresh,
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return GridView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(4.w),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 5.w,
-                mainAxisSpacing: 1.h,
-                childAspectRatio: 0.75,
-              ),
-              itemCount: controller.filteredStaffs.length,
-              itemBuilder: (context, index) {
-                final staff = controller.filteredStaffs[index];
-                return TweenAnimationBuilder<double>(
-                  duration: Duration(milliseconds: 300 + (index * 15)),
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  builder: (context, animValue, child) {
-                    return Transform.scale(
-                      scale: animValue,
-                      child: Opacity(
-                        opacity: animValue,
-                        child: _buildStaffItem(staff, index),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          },
-        ),
-      );
-    });
-  }
-
-  // ================= ITEM =================
-  Widget _buildStaffItem(Map<String, dynamic> staff, int index) {
-    final isPresent = staff['isPresent'];
-
-    final ringColor =
-    isPresent ? const Color(0xFF00b894) : Colors.grey[400]!;
-    final iconColor =
-    isPresent ? const Color(0xFF00b894) : Colors.grey[600]!;
-    final textColor =
-    isPresent ? const Color(0xFF2d3436) : Colors.grey[700]!;
-
-    return GestureDetector(
-      onTap: () => _onStaffTap(index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 16.w,
-            height: 16.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              border: Border.all(color: ringColor, width: 2),
-              boxShadow: isPresent
-                  ? [
-                BoxShadow(
-                  color: ringColor.withOpacity(0.35),
-                  blurRadius: 7,
-                  spreadRadius: 1,
-                ),
-              ]
-                  : [],
-            ),
-            child: Icon(
-              Icons.person,
-              size: 7.w,
-              color: iconColor,
-            ),
-          ),
-          SizedBox(height: 0.5.h),
-          Text(
-            staff['designation'],
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
-              color: textColor.withOpacity(0.85),
-            ),
-          ),
-          SizedBox(height: 0.4.h),
-          Text(
-            staff['name'],
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF00b894), Color(0xFF00cec9)],
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF00b894).withOpacity(0.4),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: () {
-            Get.to(() => const AddStaffView(),
-                transition: Transition.cupertino);
-          },
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          icon: const Icon(Icons.add, color: Colors.white),
-          label: Text(
-            "Add Staff",
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          _buildCustomHeader(),
-          Expanded(child: _buildGrid()),
-        ],
-      ),
-    );
-  }
-}

@@ -1,46 +1,54 @@
-class StaffAttendanceListResponce {
+class StudentAttendanceReportResponse {
   final bool success;
-  final List<StaffAttendanceRecord> records;
+  final List<StudentAttendanceReportRecord> records;
 
-  StaffAttendanceListResponce({
+  StudentAttendanceReportResponse({
     required this.success,
     required this.records,
   });
 
-  factory StaffAttendanceListResponce.fromJson(Map<String, dynamic> json) {
-    return StaffAttendanceListResponce(
+  factory StudentAttendanceReportResponse.fromJson(
+      Map<String, dynamic> json) {
+    return StudentAttendanceReportResponse(
       success: json['success'] == true,
       records: (json['records'] as List<dynamic>?)
-          ?.map((e) => StaffAttendanceRecord.fromJson(e))
+          ?.map(
+            (e) => StudentAttendanceReportRecord.fromJson(e),
+      )
           .toList() ??
           [],
     );
   }
 }
-class StaffAttendanceRecord {
+class StudentAttendanceReportRecord {
   final int? id;
   final String? userType;
   final int? userId;
   final int? adminId;
   final int? staffId;
+
   final String? className;
   final String? section;
+
   final DateTime? attendanceDate;
   final String? status;
+
   final String? inTime;
   final String? outTime;
   final int? workingMinutes;
+
   final String? rfidNumber;
   final String? entryMode;
   final String? deviceId;
   final String? ipAddress;
   final String? remarks;
+
   final DateTime? markedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
 
-  StaffAttendanceRecord({
+  StudentAttendanceReportRecord({
     this.id,
     this.userType,
     this.userId,
@@ -64,8 +72,9 @@ class StaffAttendanceRecord {
     this.deletedAt,
   });
 
-  factory StaffAttendanceRecord.fromJson(Map<String, dynamic> json) {
-    return StaffAttendanceRecord(
+  factory StudentAttendanceReportRecord.fromJson(
+      Map<String, dynamic> json) {
+    return StudentAttendanceReportRecord(
       id: _toInt(json['id']),
       userType: json['user_type'],
       userId: _toInt(json['user_id']),

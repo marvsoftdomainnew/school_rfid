@@ -6,6 +6,9 @@ class AttendanceSummaryResponse {
   final int? presentStaff;
   final int? absentStudent;
   final int? absentStaff;
+  final int? late;           // overall (optional use)
+  final int? lateStaff;
+  final int? lateStudent;
 
   AttendanceSummaryResponse({
     required this.success,
@@ -15,6 +18,9 @@ class AttendanceSummaryResponse {
     this.presentStaff,
     this.absentStudent,
     this.absentStaff,
+    this.late,
+    this.lateStaff,
+    this.lateStudent,
   });
 
   factory AttendanceSummaryResponse.fromJson(Map<String, dynamic> json) {
@@ -26,6 +32,9 @@ class AttendanceSummaryResponse {
       presentStaff: _toInt(json['presentstaff']),
       absentStudent: _toInt(json['absentstudent']),
       absentStaff: _toInt(json['absentstaff']),
+      late: _toInt(json['late']),
+      lateStaff: _toInt(json['latestaff']),
+      lateStudent: _toInt(json['latestudent']),
     );
   }
 

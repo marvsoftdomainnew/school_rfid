@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:schoolmsrfid/theme/theme_controller.dart';
 import 'package:sizer/sizer.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   Get.put(ThemeController());
   runApp(const MyApp());
 }

@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 import 'package:schoolmsrfid/data/models/requests/add_staff_request.dart';
 import 'package:schoolmsrfid/data/repositories/add_staff_repository.dart';
+import 'package:schoolmsrfid/modules/staff/controller/staff_list_controller.dart';
+
+import '../../../core/utils/toast_util.dart';
 
 
 class AddStaffController extends GetxController {
@@ -11,7 +14,7 @@ class AddStaffController extends GetxController {
   final nameError = RxnString();
   final fatherError = RxnString();
   final motherError = RxnString();
-  // final designationError = RxnString();
+  final designationError = RxnString();
   final mobileError = RxnString();
   final rfidError = RxnString();
 
@@ -19,14 +22,14 @@ class AddStaffController extends GetxController {
     required String name,
     required String father,
     required String mother,
-    // required String designation,
+    required String designation,
     required String mobile,
     required String rfid,
   }) {
     nameError.value = name.isEmpty ? "Name is required" : null;
     fatherError.value = father.isEmpty ? "Father name is required" : null;
     motherError.value = mother.isEmpty ? "Mother name is required" : null;
-    // designationError.value = designation.isEmpty ? "Designation is required" : null;
+    designationError.value = designation.isEmpty ? "Designation is required" : null;
 
     if (mobile.isEmpty) {
       mobileError.value = "Mobile number is required";
@@ -42,7 +45,7 @@ class AddStaffController extends GetxController {
       nameError,
       fatherError,
       motherError,
-      // designationError,
+      designationError,
       mobileError,
       rfidError
     ].every((e) => e.value == null);
@@ -52,7 +55,7 @@ class AddStaffController extends GetxController {
     required String name,
     required String father,
     required String mother,
-    // required String designation,
+    required String designation,
     required String mobile,
     required String rfid,
   }) async {
@@ -60,7 +63,7 @@ class AddStaffController extends GetxController {
       name: name,
       father: father,
       mother: mother,
-      // designation: designation,
+      designation: designation,
       mobile: mobile,
       rfid: rfid,
     )) return;
@@ -73,14 +76,18 @@ class AddStaffController extends GetxController {
           name: name,
           fatherName: father,
           motherName: mother,
-          // designation: designation,
+          post: designation,
           mobileNumber: mobile,
           rfidNumber: rfid,
         ),
       );
 
       if (response.success == true) {
-        Get.back(result: true); // 🔁 refresh list on previous screen
+        ToastUtil.success(response.message ?? "Staff added");
+        // 🔄 Refresh list
+        Get.find<StaffListController>().fetchStaffs();
+
+        Get.back();
       }
     } catch (_) {
       // handled globally (Dio interceptor / snackbar util)

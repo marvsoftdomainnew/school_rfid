@@ -4,7 +4,7 @@ import 'package:schoolmsrfid/data/models/requests/add_students_request.dart';
 import '../../../core/services/network_exceptions.dart';
 import '../../../core/utils/toast_util.dart';
 import '../../../data/repositories/add_student_repository.dart';
-import '../../students/controller/student_attendance_list_controller.dart';
+import '../../students/controller/student_list_controller.dart';
 
 class AddStudentController extends GetxController {
   final AddStudentRepository _repository = AddStudentRepository();
@@ -17,6 +17,7 @@ class AddStudentController extends GetxController {
   final motherError = RxnString();
   final classError = RxnString();
   final sectionError = RxnString();
+  final rollError = RxnString();
   final mobileError = RxnString();
   final rfidError = RxnString();
 
@@ -26,6 +27,7 @@ class AddStudentController extends GetxController {
     required String mother,
     required String studentClass,
     required String section,
+    required String roll,
     required String mobile,
     required String rfid,
   }) {
@@ -34,6 +36,7 @@ class AddStudentController extends GetxController {
     motherError.value = null;
     classError.value = null;
     sectionError.value = null;
+    rollError.value = null;
     mobileError.value = null;
     rfidError.value = null;
 
@@ -59,6 +62,10 @@ class AddStudentController extends GetxController {
       sectionError.value = "Section is required";
       valid = false;
     }
+    if (roll.isEmpty) {
+      rollError.value = "Roll number is required";
+      return false;
+    }
     if (mobile.isEmpty || mobile.length != 10) {
       mobileError.value = "Enter valid 10 digit number";
       valid = false;
@@ -77,6 +84,7 @@ class AddStudentController extends GetxController {
     required String mother,
     required String studentClass,
     required String section,
+    required String rollNumber,
     required String mobile,
     required String rfid,
   }) async {
@@ -86,6 +94,7 @@ class AddStudentController extends GetxController {
       mother: mother,
       studentClass: studentClass,
       section: section,
+      roll: rollNumber,
       mobile: mobile,
       rfid: rfid,
     )) return;
@@ -100,6 +109,7 @@ class AddStudentController extends GetxController {
           motherName: mother,
           studentClass: studentClass,
           section: section,
+          rollNumber: rollNumber,
           mobileNumber: mobile,
           rfidNumber: rfid,
         ),
@@ -108,7 +118,7 @@ class AddStudentController extends GetxController {
       if (response.success == true) {
         ToastUtil.success(response.message ?? "Student added");
         // 🔄 Refresh list
-        Get.find<StudentAttendanceListController>().fetchStudents();
+        Get.find<StudentListController>().fetchStudents();
 
         Get.back();
       } else {

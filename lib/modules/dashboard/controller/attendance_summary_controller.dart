@@ -18,6 +18,9 @@ class AttendanceSummaryController extends GetxController {
   final presentStaff = 0.obs;
   final absentStudent = 0.obs;
   final absentStaff = 0.obs;
+  final lateStudent = 0.obs;
+  final lateStaff = 0.obs;
+  final lateTotal = 0.obs;
 
   // ================= API CALL =================
   Future<void> fetchSummary() async {
@@ -33,6 +36,9 @@ class AttendanceSummaryController extends GetxController {
         presentStaff.value = response.presentStaff ?? 0;
         absentStudent.value = response.absentStudent ?? 0;
         absentStaff.value = response.absentStaff ?? 0;
+        lateStudent.value = response.lateStudent ?? 0;
+        lateStaff.value = response.lateStaff ?? 0;
+        lateTotal.value = response.late ?? 0;
       } else {
         SnackbarUtil.showError("Error", "Failed to load dashboard summary",);
       }
@@ -50,6 +56,10 @@ class AttendanceSummaryController extends GetxController {
     return student.value > 0 ||
         staff.value > 0 ||
         presentStudent.value > 0 ||
-        presentStaff.value > 0;
+        presentStaff.value > 0 ||
+        absentStudent.value > 0 ||
+        absentStaff.value > 0 ||
+        lateStudent.value > 0 ||
+        lateStaff.value > 0;
   }
 }

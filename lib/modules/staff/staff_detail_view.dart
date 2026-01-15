@@ -51,7 +51,6 @@ class StaffDetailView extends StatelessWidget {
           const CustomHeader(
             title: "Staff Details",
             subtitle: "Staff profile & attendance",
-            // primary: primary,
           ),
 
           Expanded(
@@ -70,18 +69,19 @@ class StaffDetailView extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: primary, width: 2),
                         ),
-                        child: Icon(Icons.person, size: 9.w, color: primary),
+                        child:
+                        Icon(Icons.person, size: 9.w, color: primary),
                       ),
                       SizedBox(height: 1.h),
                       Text(
-                        staffData['name'],
+                        staffData['name'] ?? '',
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        staffData['designation'],
+                        staffData['post'] ?? '',
                         style: TextStyle(
                           fontSize: 13.sp,
                           color: Colors.grey[600],
@@ -92,11 +92,23 @@ class StaffDetailView extends StatelessWidget {
 
                   SizedBox(height: 4.h),
 
-                  // ===== DETAILS =====
-                  _infoTile("Father Name", "Mahesh Sharma"),
-                  _infoTile("Mobile Number", "9876543210"),
-                  _infoTile("RFID Number", "RFID-223344"),
-                  _infoTile("Attendance Status", "Present"),
+                  // ===== DETAILS (API DATA) =====
+                  _infoTile(
+                    "Father Name",
+                    staffData['father_name'] ?? '',
+                  ),
+                  _infoTile(
+                    "Mobile Number",
+                    staffData['mobile'] ?? '',
+                  ),
+                  _infoTile(
+                    "RFID Number",
+                    staffData['rfid'] ?? '',
+                  ),
+                  _infoTile(
+                    "Attendance Status",
+                    staffData['attendance_status'] ?? 'N/A',
+                  ),
                 ],
               ),
             ),

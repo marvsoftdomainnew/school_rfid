@@ -1,19 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
-import 'package:schoolmsrfid/data/repositories/student_attendance_list_repository.dart';
+import 'package:schoolmsrfid/data/models/responses/students_list_response.dart';
+import 'package:schoolmsrfid/data/repositories/student_list_repository.dart';
 import '../../../core/services/network_exceptions.dart';
 import '../../../core/utils/snackbar_util.dart';
 
-class StudentAttendanceListController extends GetxController {
-  final StudentAttendanceListRepository _repository = StudentAttendanceListRepository();
+class StudentListController extends GetxController {
+  final StudentListRepository _repository = StudentListRepository();
 
-  // ================= STATE =================
   final isLoading = false.obs;
 
-  /// Final list used by UI
+  /// Original API list
   final students = <Map<String, dynamic>>[].obs;
 
-  /// Search-filtered list
+  /// Filtered list (UI)
   final filteredStudents = <Map<String, dynamic>>[].obs;
 
   // ================= API =================
@@ -21,17 +21,18 @@ class StudentAttendanceListController extends GetxController {
     isLoading.value = true;
 
     try {
-      final response = await _repository.fetchStudentAttendance();
+      final StudentsListResponse response =
+      await _repository.fetchStudentAttendance();
 
       if (response.success == true) {
-        /// Map API → UI format
-        final list = response.records.map((record) {
+        final list = response.records.map((StudentRecord r) {
           return {
-            'id': record.userId,
-            'name': 'Student ${record.userId}', // backend can send name later
-            'class': record.className ?? 'Class',
-            'section': record.section ?? '-',
-            'isPresent': record.status == 'present',
+            'id': r.studentId ?? r.id,
+            'name': r.name ?? '',
+            'class': r.studentClass ?? '',
+            'section': r.section ?? '',
+            'rfid': r.rfidNumber ?? '',
+            'mobile': r.mobileNumber ?? '',
           };
         }).toList();
 
@@ -40,7 +41,7 @@ class StudentAttendanceListController extends GetxController {
       } else {
         SnackbarUtil.showError(
           "Error",
-          "Failed to load student attendance",
+          response.message ?? "Failed to load students",
         );
       }
     } on DioException catch (e) {
@@ -53,19 +54,18 @@ class StudentAttendanceListController extends GetxController {
     }
   }
 
-  // ================= SEARCH =================
-  void filter(String query) {
-    if (query.isEmpty) {
+  // ================= SEARCH (NAME ONLY) =================
+  void filterByName(String query) {
+    if (query.trim().isEmpty) {
       filteredStudents.assignAll(students);
       return;
     }
 
     final q = query.toLowerCase();
+
     filteredStudents.assignAll(
       students.where((s) {
-        return s['name'].toLowerCase().contains(q) ||
-            s['class'].toLowerCase().contains(q) ||
-            s['section'].toLowerCase().contains(q);
+        return (s['name'] ?? '').toLowerCase().contains(q);
       }).toList(),
     );
   }

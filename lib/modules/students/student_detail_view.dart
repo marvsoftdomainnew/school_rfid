@@ -10,7 +10,6 @@ class StudentDetailView extends StatelessWidget {
     required this.studentData,
   });
 
-
   static const Color primary = Color(0xFF00b894);
 
   Widget _infoTile(String label, String value) {
@@ -69,18 +68,19 @@ class StudentDetailView extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: primary, width: 2),
                         ),
-                        child: Icon(Icons.school, size: 9.w, color: primary),
+                        child:
+                        Icon(Icons.school, size: 9.w, color: primary),
                       ),
                       SizedBox(height: 1.h),
                       Text(
-                        studentData['name'],
+                        studentData['name'] ?? '',
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        "${studentData['class']} - ${studentData['section']}",
+                        "${studentData['class'] ?? ''} - ${studentData['section'] ?? ''}",
                         style: TextStyle(
                           fontSize: 14.sp,
                           color: Colors.grey[600],
@@ -91,12 +91,27 @@ class StudentDetailView extends StatelessWidget {
 
                   SizedBox(height: 4.h),
 
-                  // ===== DETAILS =====
-                  _infoTile("Father Name", "Ramesh Kumar"),
-                  _infoTile("Mother Name", "Sunita Devi"),
-                  _infoTile("Mobile Number", "9876543210"),
-                  _infoTile("RFID Number", "RFID-893423"),
-                  _infoTile("Attendance Status", "Present"),
+                  // ===== DETAILS (API DATA) =====
+                  _infoTile(
+                    "Father Name",
+                    studentData['father_name'] ?? '',
+                  ),
+                  _infoTile(
+                    "Mother Name",
+                    studentData['mother_name'] ?? '',
+                  ),
+                  _infoTile(
+                    "Mobile Number",
+                    studentData['mobile'] ?? '',
+                  ),
+                  _infoTile(
+                    "RFID Number",
+                    studentData['rfid'] ?? '',
+                  ),
+                  _infoTile(
+                    "Attendance Status",
+                    studentData['attendance_status'] ?? 'N/A',
+                  ),
                 ],
               ),
             ),
