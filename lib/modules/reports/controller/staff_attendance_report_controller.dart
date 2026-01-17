@@ -1,10 +1,8 @@
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-
 import '../../../core/services/network_exceptions.dart';
 import '../../../core/utils/snackbar_util.dart';
 import '../../../data/models/responses/staff_attandance_report_response.dart';
@@ -54,7 +52,7 @@ class StaffAttendanceReportController extends GetxController {
       records.where((r) {
         final matchPost = selectedPost.value == null ||
             selectedPost.value!.isEmpty ||
-            r.userType == selectedPost.value;
+            r.staff?.role == selectedPost.value;
 
         final recordDate = r.attendanceDate;
 
@@ -74,13 +72,14 @@ class StaffAttendanceReportController extends GetxController {
   // ================= HELPERS =================
   List<String> getPostList() {
     final posts = records
-        .map((e) => e.userType)
+        .map((e) => e.staff?.role)
         .whereType<String>()
         .toSet()
         .toList();
     posts.sort();
     return posts;
   }
+
 
   // ================= PDF EXPORT =================
   Future<void> exportPdf() async {
@@ -104,18 +103,16 @@ class StaffAttendanceReportController extends GetxController {
           ),
           pw.SizedBox(height: 16),
           pw.Table.fromTextArray(
-            headers: ["Staff ID", "Post", "Present", "Total", "%"],
+            headers: ["Staff Name", "Post", "Status"],
             data: filteredRecords.map((r) {
-              final present = r.status == "present" ? 1 : 0;
-              final total = 1;
-              final percent = ((present / total) * 100).toStringAsFixed(0);
+              // final present = r.status == "present" ? 1 : 0;
+              // final total = 1;
+              // final percent = ((present / total) * 100).toStringAsFixed(0);
 
               return [
-                r.staffId ?? "-",
-                r.userType ?? "-",
-                present.toString(),
-                total.toString(),
-                "$percent%",
+                r.staff?.name ?? "-",
+                r.staff?.role ?? "-",
+                r.status ?? "-",
               ];
             }).toList(),
             headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),

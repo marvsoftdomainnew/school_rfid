@@ -84,27 +84,19 @@ class _SettingsViewState extends State<SettingsView> {
             child: ListView(
               padding: EdgeInsets.fromLTRB(4.w, 2.h, 4.w, 3.h),
               children: [
-                _sectionTitle("Account"),
-                _settingItem(
-                  icon: Icons.lock_outline,
-                  title: "Change Password",
-                  onTap: () {Get.to(
-                        () => const ChangePasswordView(),
-                    transition: Transition.cupertino,
-                  );},
-                ),
-
-                SizedBox(height: 2.h),
+                // _sectionTitle("Account"),
+                // _settingItem(
+                //   icon: Icons.lock_outline,
+                //   title: "Change Password",
+                //   onTap: () {Get.to(
+                //         () => const ChangePasswordView(),
+                //     transition: Transition.cupertino,
+                //   );},
+                // ),
+                //
+                // SizedBox(height: 2.h),
 
                 _sectionTitle("Reports"),
-                _settingItem(
-                  icon: Icons.assignment_turned_in_outlined,
-                  title: "Student Attendance Report",
-                  onTap: () {Get.to(
-                        () => const StudentAttendanceReportView(),
-                    transition: Transition.cupertino,
-                  );},
-                ),
                 _settingItem(
                   icon: Icons.badge_outlined,
                   title: "Staff Attendance Report",
@@ -113,6 +105,15 @@ class _SettingsViewState extends State<SettingsView> {
                     transition: Transition.cupertino,
                   );},
                 ),
+                _settingItem(
+                  icon: Icons.assignment_turned_in_outlined,
+                  title: "Student Attendance Report",
+                  onTap: () {Get.to(
+                        () => const StudentAttendanceReportView(),
+                    transition: Transition.cupertino,
+                  );},
+                ),
+
 
                 // SizedBox(height: 2.h),
 

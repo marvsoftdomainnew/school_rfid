@@ -98,6 +98,10 @@ class StaffDetailView extends StatelessWidget {
                     staffData['father_name'] ?? '',
                   ),
                   _infoTile(
+                    "Mother Name",
+                    staffData['mother_name'] ?? '',
+                  ),
+                  _infoTile(
                     "Mobile Number",
                     staffData['mobile'] ?? '',
                   ),
@@ -105,10 +109,10 @@ class StaffDetailView extends StatelessWidget {
                     "RFID Number",
                     staffData['rfid'] ?? '',
                   ),
-                  _infoTile(
-                    "Attendance Status",
-                    staffData['attendance_status'] ?? 'N/A',
-                  ),
+                  // _infoTile(
+                  //   "Attendance Status",
+                  //   staffData['attendance_status'] ?? 'N/A',
+                  // ),
                 ],
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:schoolmsrfid/modules/staff/controller/staff_list_controller.dart';
 import 'package:schoolmsrfid/modules/staff/staff_detail_view.dart';
 import 'package:sizer/sizer.dart';
+import '../../theme/app_colors.dart';
 import 'add_staff_view.dart';
 
 class StaffListView extends StatefulWidget {
@@ -112,19 +113,25 @@ class _StaffListViewState extends State<StaffListView>
                 ? TextField(
               controller: searchController,
               autofocus: true,
-              onChanged: (value) {
-                _applyFilters();
+              onChanged: (_) {
+                setState(() {
+                  _applyFilters();
+                });
               },
               decoration: InputDecoration(
                 hintText: "Search staff...",
                 border: InputBorder.none,
                 hintStyle: TextStyle(
                   fontSize: 17.sp,
-                  color: Colors.grey[400],
+                  color: Colors.grey[500],
+                ),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 1.h,
                 ),
               ),
               style: TextStyle(
-                fontSize: 15.sp,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.w500,
               ),
             )
@@ -149,36 +156,35 @@ class _StaffListViewState extends State<StaffListView>
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                if (isSearching) {
-                  isSearching = false;
-                  searchController.clear();
-
-                  controller.applyFilters(
-                    searchQuery: "",
-                    selectedPost: selectedPost,
-                  );
-                }
-                else {
-                  isSearching = true;
-                }
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.all(2.5.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF00b894).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isSearching ? Icons.close : Icons.search,
-                color: const Color(0xFF00b894),
-                size: 5.w,
-              ),
-            ),
-          ),
+          // GestureDetector(
+          //   onTap: () {
+          //     setState(() {
+          //       if (isSearching) {
+          //         isSearching = false;
+          //         searchController.clear();
+          //         controller.applyFilters(
+          //           searchQuery: "",
+          //           selectedPost: selectedPost,
+          //         );
+          //       }
+          //       else {
+          //         isSearching = true;
+          //       }
+          //     });
+          //   },
+          //   child: Container(
+          //     padding: EdgeInsets.all(2.5.w),
+          //     decoration: BoxDecoration(
+          //       color: const Color(0xFF00b894).withOpacity(0.1),
+          //       shape: BoxShape.circle,
+          //     ),
+          //     child: Icon(
+          //       isSearching ? Icons.close : Icons.search,
+          //       color: const Color(0xFF00b894),
+          //       size: 5.w,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -195,11 +201,19 @@ class _StaffListViewState extends State<StaffListView>
         padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
         child: DropdownButtonFormField<String>(
           value: selectedPost,
+          isDense: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded),
           items: posts
               .map(
-                (e) => DropdownMenuItem(
+                (e) => DropdownMenuItem<String>(
               value: e,
-              child: Text(e),
+              child: Text(
+                e,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           )
               .toList(),
@@ -208,21 +222,51 @@ class _StaffListViewState extends State<StaffListView>
             _applyFilters();
           },
           decoration: InputDecoration(
-            labelText: "Post",
-            border: OutlineInputBorder(
+            labelText: "Post / Designation",
+            labelStyle: TextStyle(
+              fontSize: 16.sp,
+              color: Colors.grey[600],
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 3.w,
+              vertical: 1.6.h, // height control
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: Color(0xFF00b894),
+                width: 1.4,
+              ),
             ),
           ),
+          style: TextStyle(
+            fontSize: 13.sp,
+            color: const Color(0xFF2d3436),
+            fontWeight: FontWeight.w600,
+          ),
+          dropdownColor: Colors.white,
+          borderRadius: BorderRadius.circular(14),
         ),
       );
     });
   }
 
+
   // ================= GRID + ANIMATION =================
   Widget _buildGrid() {
     return Obx(() {
       if (controller.isLoading.value && controller.staffs.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: CircularProgressIndicator(color: AppColors.primary,
+          strokeWidth: 2,));
       }
 
       return AnimatedBuilder(

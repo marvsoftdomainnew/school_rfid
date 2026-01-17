@@ -108,10 +108,10 @@ class StudentDetailView extends StatelessWidget {
                     "RFID Number",
                     studentData['rfid'] ?? '',
                   ),
-                  _infoTile(
-                    "Attendance Status",
-                    studentData['attendance_status'] ?? 'N/A',
-                  ),
+                  // _infoTile(
+                  //   "Attendance Status",
+                  //   studentData['attendance_status'] ?? 'N/A',
+                  // ),
                 ],
               ),
             ),

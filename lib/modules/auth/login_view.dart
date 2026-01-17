@@ -239,25 +239,25 @@ class _LoginViewState extends State<LoginView>
                             SizedBox(height: 1.h),
 
                             // Forgot Password
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  Get.to(
-                                        () => const ForgotPasswordView(),
-                                    transition: Transition.cupertino,
-                                  );
-                                },
-                                child: Text(
-                                  "Forgot Password?",
-                                  style: TextStyle(
-                                    color: const Color(0xFF00b894),
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            // Align(
+                            //   alignment: Alignment.centerRight,
+                            //   child: TextButton(
+                            //     onPressed: () {
+                            //       Get.to(
+                            //             () => const ForgotPasswordView(),
+                            //         transition: Transition.cupertino,
+                            //       );
+                            //     },
+                            //     child: Text(
+                            //       "Forgot Password?",
+                            //       style: TextStyle(
+                            //         color: const Color(0xFF00b894),
+                            //         fontSize: 14.sp,
+                            //         fontWeight: FontWeight.w600,
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
 
                             SizedBox(height: 2.h),
 

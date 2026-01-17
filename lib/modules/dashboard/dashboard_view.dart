@@ -128,77 +128,77 @@ class _DashboardViewState extends State<DashboardView>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Option 1: Donut Chart for Students
-                  Obx(() {
-                    if (summaryController.isLoading.value &&
-                        !summaryController.hasData) {
-                      return DashboardShimmers.donutChart();
+                  // Obx(() {
+                  //   if (summaryController.isLoading.value &&
+                  //       !summaryController.hasData) {
+                  //     return DashboardShimmers.donutChart();
+                  //
+                  //   }
+                  //
+                  //   return _buildDonutChartCard(
+                  //     title: "Students Attendance",
+                  //     present: summaryController.presentStudent.value ?? 0,
+                  //     late: summaryController.lateStudent.value ?? 0,
+                  //     absent: summaryController.absentStudent.value ?? 0,
+                  //     total: summaryController.student.value ?? 0,
+                  //     color: const Color(0xFF667eea),
+                  //     icon: Icons.school,
+                  //     index: 0,
+                  //   );
+                  // }),
+                  //
+                  // SizedBox(height: 2.5.h),
+                  //
+                  // // Option 2: Bar Chart for Staff
+                  // Obx(() {
+                  //   if (summaryController.isLoading.value &&
+                  //       !summaryController.hasData) {
+                  //     return DashboardShimmers.barChart();
+                  //
+                  //   }
+                  //
+                  //   return _buildBarChartCard(
+                  //     title: "Staff Attendance",
+                  //     present: summaryController.presentStaff.value ?? 0,
+                  //     late: summaryController.lateStaff.value ?? 0,
+                  //     absent: summaryController.absentStaff.value ?? 0,
+                  //     total: summaryController.staff.value ?? 0,
+                  //     color: const Color(0xFF00b894),
+                  //     icon: Icons.badge,
+                  //     index: 1,
+                  //   );
+                  // }),
 
-                    }
+                  // SizedBox(height: 3.h),
 
-                    return _buildDonutChartCard(
-                      title: "Students Attendance",
-                      present: summaryController.presentStudent.value ?? 0,
-                      late: summaryController.lateStudent.value ?? 0,
-                      absent: summaryController.absentStudent.value ?? 0,
-                      total: summaryController.student.value ?? 0,
-                      color: const Color(0xFF667eea),
-                      icon: Icons.school,
-                      index: 0,
-                    );
-                  }),
-
-                  SizedBox(height: 2.5.h),
-
-                  // Option 2: Bar Chart for Staff
-                  Obx(() {
-                    if (summaryController.isLoading.value &&
-                        !summaryController.hasData) {
-                      return DashboardShimmers.barChart();
-
-                    }
-
-                    return _buildBarChartCard(
-                      title: "Staff Attendance",
-                      present: summaryController.presentStaff.value ?? 0,
-                      late: summaryController.lateStaff.value ?? 0,
-                      absent: summaryController.absentStaff.value ?? 0,
-                      total: summaryController.staff.value ?? 0,
-                      color: const Color(0xFF00b894),
-                      icon: Icons.badge,
-                      index: 1,
-                    );
-                  }),
-
-                  SizedBox(height: 3.h),
-
-                  // Quick Stats Header
-                  Row(
-                    children: [
-                      Container(
-                        width: 1.w,
-                        height: 3.h,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        "Quick Statistics",
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2d3436),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 2.h),
+                  // // Quick Stats Header
+                  // Row(
+                  //   children: [
+                  //     Container(
+                  //       width: 1.w,
+                  //       height: 3.h,
+                  //       decoration: BoxDecoration(
+                  //         gradient: const LinearGradient(
+                  //           begin: Alignment.topCenter,
+                  //           end: Alignment.bottomCenter,
+                  //           colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  //         ),
+                  //         borderRadius: BorderRadius.circular(10),
+                  //       ),
+                  //     ),
+                  //     SizedBox(width: 2.w),
+                  //     Text(
+                  //       "Quick Statistics",
+                  //       style: TextStyle(
+                  //         fontSize: 18.sp,
+                  //         fontWeight: FontWeight.bold,
+                  //         color: const Color(0xFF2d3436),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  //
+                  // SizedBox(height: 2.h),
 
                   // Stats Grid
                   Obx(() {
@@ -234,18 +234,19 @@ class _DashboardViewState extends State<DashboardView>
                           color: const Color(0xFF55efc4),
                           icon: Icons.check_circle,
                         ),
-                        _buildStatCard(
-                          title: "Absent Students",
-                          value:
-                              "${summaryController.absentStudent.value ?? 0}",
-                          color: const Color(0xFFff7675),
-                          icon: Icons.cancel,
-                        ),
+
                         _buildStatCard(
                           title: "Present Staff",
                           value: "${summaryController.presentStaff.value ?? 0}",
                           color: const Color(0xFF74b9ff),
                           icon: Icons.badge,
+                        ),
+                        _buildStatCard(
+                          title: "Absent Students",
+                          value:
+                          "${summaryController.absentStudent.value ?? 0}",
+                          color: const Color(0xFFff7675),
+                          icon: Icons.cancel,
                         ),
                         _buildStatCard(
                           title: "Absent Staff",
@@ -279,8 +280,6 @@ class _DashboardViewState extends State<DashboardView>
       ),
     );
   }
-
-
 
   // Option 1: Donut Chart Card
   Widget _buildDonutChartCard({

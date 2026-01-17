@@ -306,6 +306,7 @@ class _AddStudentViewState extends State<AddStudentView> {
               padding: EdgeInsets.fromLTRB(5.w, 2.h, 5.w, 10.h),
               child: Column(
                 children: [
+                  _inputField("Roll Number", Icons.confirmation_number, rollCtrl, controller.sectionError),
                   _inputField("Student Name", Icons.person, nameCtrl, controller.nameError),
                   _inputField("Father Name", Icons.person_outline, fatherCtrl, controller.fatherError),
                   _inputField("Mother Name", Icons.person_outline, motherCtrl, controller.motherError),
@@ -317,7 +318,6 @@ class _AddStudentViewState extends State<AddStudentView> {
                     inputFormatters: [
                     UpperCaseTextFormatter(),
                   ],),
-                  _inputField("Roll Number", Icons.confirmation_number, rollCtrl, controller.sectionError),
                   _inputField("Mobile Number", Icons.phone, mobileCtrl, controller.mobileError, keyboardType: TextInputType.phone,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,

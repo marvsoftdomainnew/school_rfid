@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:schoolmsrfid/modules/students/controller/student_list_controller.dart';
 import 'package:schoolmsrfid/modules/students/student_detail_view.dart';
+import 'package:schoolmsrfid/theme/app_colors.dart';
 import 'package:sizer/sizer.dart';
 import '../../core/utils/toast_util.dart';
 import 'add_student_view.dart';
@@ -139,7 +140,11 @@ class _StudentListViewState extends State<StudentListView>
                 ? TextField(
               controller: searchController,
               autofocus: true,
-              onChanged: (_) => _applyFilters(),
+              onChanged: (_) {
+                setState(() {
+                  _applyFilters();
+                });
+              },
               decoration: InputDecoration(
                 hintText: "Search student...",
                 border: InputBorder.none,
@@ -178,31 +183,31 @@ class _StudentListViewState extends State<StudentListView>
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                if (isSearching) {
-                  isSearching = false;
-                  searchController.clear();
-                  _applyFilters();
-                } else {
-                  isSearching = true;
-                }
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.all(2.5.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF00b894).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isSearching ? Icons.close : Icons.search,
-                color: const Color(0xFF00b894),
-                size: 5.w,
-              ),
-            ),
-          ),
+          // GestureDetector(
+          //   onTap: () {
+          //     setState(() {
+          //       if (isSearching) {
+          //         isSearching = false;
+          //         searchController.clear();
+          //         _applyFilters();
+          //       } else {
+          //         isSearching = true;
+          //       }
+          //     });
+          //   },
+          //   child: Container(
+          //     padding: EdgeInsets.all(2.5.w),
+          //     decoration: BoxDecoration(
+          //       color: const Color(0xFF00b894).withOpacity(0.1),
+          //       shape: BoxShape.circle,
+          //     ),
+          //     child: Icon(
+          //       isSearching ? Icons.close : Icons.search,
+          //       color: const Color(0xFF00b894),
+          //       size: 5.w,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -259,9 +264,7 @@ class _StudentListViewState extends State<StudentListView>
       value: value,
       isDense: true, // height kam karta hai
       icon: const Icon(Icons.keyboard_arrow_down_rounded),
-      items: items
-          .map(
-            (e) => DropdownMenuItem<String>(
+      items: items.map((e) => DropdownMenuItem<String>(
           value: e,
           child: Text(
             e,
@@ -315,7 +318,8 @@ class _StudentListViewState extends State<StudentListView>
   Widget _buildGrid() {
     return Obx(() {
       if (controller.isLoading.value && controller.students.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: CircularProgressIndicator(color: AppColors.primary,
+          strokeWidth: 2,));
       }
 
       return AnimatedBuilder(

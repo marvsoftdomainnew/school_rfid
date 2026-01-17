@@ -52,10 +52,10 @@ class StudentAttendanceReportController extends GetxController {
     filteredRecords.assignAll(
       records.where((r) {
         final matchClass = selectedClass.value == null ||
-            r.className == selectedClass.value;
+            r.student?.className == selectedClass.value;
 
         final matchSection = selectedSection.value == null ||
-            r.section == selectedSection.value;
+            r.student?.section == selectedSection.value;
 
         final recordDate = r.attendanceDate;
 
@@ -75,7 +75,7 @@ class StudentAttendanceReportController extends GetxController {
   // ================= DROPDOWN DATA =================
   List<String> getClassList() {
     return records
-        .map((e) => e.className)
+        .map((e) => e.student?.className)
         .whereType<String>()
         .toSet()
         .toList()
@@ -84,7 +84,7 @@ class StudentAttendanceReportController extends GetxController {
 
   List<String> getSectionList() {
     return records
-        .map((e) => e.section)
+        .map((e) => e.student?.section)
         .whereType<String>()
         .toSet()
         .toList()
@@ -114,20 +114,16 @@ class StudentAttendanceReportController extends GetxController {
           pw.SizedBox(height: 16),
           pw.Table.fromTextArray(
             headers: [
-              "Student ID",
+              "Student Name",
               "Class",
               "Section",
-              "Date",
               "Status",
             ],
             data: filteredRecords.map((r) {
               return [
-                r.userId?.toString() ?? "-",
-                r.className ?? "-",
-                r.section ?? "-",
-                r.attendanceDate != null
-                    ? "${r.attendanceDate!.day}/${r.attendanceDate!.month}/${r.attendanceDate!.year}"
-                    : "-",
+                r.student?.name ?? "-",
+                r.student?.className ?? "-",
+                r.student?.section ?? "-",
                 r.status ?? "-",
               ];
             }).toList(),

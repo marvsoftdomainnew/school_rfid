@@ -229,9 +229,9 @@ class _AddStaffViewState extends State<AddStaffView> {
               child: Column(
                 children: [
                   _inputField("Staff Name", Icons.person, nameCtrl, controller.nameError),
+                  _inputField("Post/Designation", Icons.work_outline, designationCtrl, controller.designationError),
                   _inputField("Father Name", Icons.person_outline, fatherCtrl, controller.fatherError),
                   _inputField("Mother Name", Icons.person_outline, motherCtrl, controller.motherError),
-                  _inputField("Designation", Icons.work_outline, designationCtrl, controller.designationError),
                   _inputField(
                     "Mobile Number",
                     Icons.phone,

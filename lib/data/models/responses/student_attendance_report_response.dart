@@ -20,6 +20,8 @@ class StudentAttendanceReportResponse {
     );
   }
 }
+
+
 class StudentAttendanceReportRecord {
   final int? id;
   final String? userType;
@@ -48,6 +50,9 @@ class StudentAttendanceReportRecord {
   final DateTime? updatedAt;
   final DateTime? deletedAt;
 
+  // ✅ NESTED STUDENT OBJECT
+  final StudentUser? student;
+
   StudentAttendanceReportRecord({
     this.id,
     this.userType,
@@ -70,6 +75,7 @@ class StudentAttendanceReportRecord {
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
+    this.student,
   });
 
   factory StudentAttendanceReportRecord.fromJson(
@@ -96,10 +102,81 @@ class StudentAttendanceReportRecord {
       createdAt: _toDate(json['created_at']),
       updatedAt: _toDate(json['updated_at']),
       deletedAt: _toDate(json['deleted_at']),
+
+      // ✅ STUDENT OBJECT PARSING
+      student: json['student'] != null
+          ? StudentUser.fromJson(json['student'])
+          : null,
     );
   }
 
   // ================= SAFE PARSERS =================
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    return int.tryParse(value.toString());
+  }
+
+  static DateTime? _toDate(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value.toString());
+  }
+}
+
+
+class StudentUser {
+  final int? id;
+  final int? schoolId;
+  final int? staffId;
+  final int? studentId;
+
+  final String? name;
+  final String? fatherName;
+  final String? motherName;
+
+  final String? className;
+  final String? section;
+
+  final String? mobileNumber;
+  final String? rfidNumber;
+
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  StudentUser({
+    this.id,
+    this.schoolId,
+    this.staffId,
+    this.studentId,
+    this.name,
+    this.fatherName,
+    this.motherName,
+    this.className,
+    this.section,
+    this.mobileNumber,
+    this.rfidNumber,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory StudentUser.fromJson(Map<String, dynamic> json) {
+    return StudentUser(
+      id: _toInt(json['id']),
+      schoolId: _toInt(json['school_id']),
+      staffId: _toInt(json['staff_id']),
+      studentId: _toInt(json['student_id']),
+      name: json['name'],
+      fatherName: json['father_name'],
+      motherName: json['mother_name'],
+      className: json['class'],
+      section: json['section'],
+      mobileNumber: json['mobile_number'],
+      rfidNumber: json['rfid_number'],
+      createdAt: _toDate(json['created_at']),
+      updatedAt: _toDate(json['updated_at']),
+    );
+  }
 
   static int? _toInt(dynamic value) {
     if (value == null) return null;
