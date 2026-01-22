@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:schoolmsrfid/modules/attendance/mark_attendance_view.dart';
-import 'package:schoolmsrfid/modules/settings/settings_view.dart';
+import 'package:schoolmsrfid/modules/profile/profile_view.dart';
 import '../../core/utils/toast_util.dart';
 import '../../widgets/custom_bottom_nav.dart';
 import '../staff/staff_list_view.dart';
@@ -26,7 +26,7 @@ class _DashboardShellState extends State<DashboardShell> {
     const StudentListView(),
     const MarkAttendanceView(),
     const StaffListView(),
-    const SettingsView(),
+    const ProfileView(),
   ];
 
   Future<bool> _onWillPop() async {

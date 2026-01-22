@@ -1,7 +1,6 @@
 class ApiEndpoints {
   // Base URL
   static const String baseUrl = "https://ourskool.in/api";
-  // static const String imageBaseUrl = "https://chavanbrothers.co.in/";
 
   // Endpoints
   static const String loginUrl = "$baseUrl/staff/authenticate";
@@ -14,11 +13,6 @@ class ApiEndpoints {
   static const String staffAttendanceReportUrl = "$baseUrl/staff/attendance";
   static const String studentAttendanceReportUrl = "$baseUrl/student/attendance";
   static const String markAttendanceUrl = "$baseUrl/staff/markattendance";
-  // static const String signupUrl = "$baseUrl/user/register";
-  // static const String getCategoryUrl = "$baseUrl/user/categories";
-  // static const String getBannersUrl = "$baseUrl/getbanners";
-  //
-  //
-  // static String productByCategoryUrl(int categoryId) =>
-  //     "$baseUrl/products/categories/$categoryId";
+  static const String scheduleTimeUrl = "$baseUrl/settings";
+  static const String getScheduleTimeUrl = "$baseUrl/getsettings";
 }

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:schoolmsrfid/modules/profile/school_time_schedule_view.dart';
 import 'package:schoolmsrfid/modules/reports/staff_attendance_report_view.dart';
 import 'package:schoolmsrfid/modules/reports/student_attendance_report_view.dart';
-import 'package:schoolmsrfid/modules/change_password/change_password_view.dart';
 import 'package:sizer/sizer.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/theme_controller.dart';
 import '../auth/controller/logout_controller.dart';
 
-class SettingsView extends StatefulWidget {
-  const SettingsView({super.key});
+class ProfileView extends StatefulWidget {
+  const ProfileView({super.key});
 
   @override
-  State<SettingsView> createState() => _SettingsViewState();
+  State<ProfileView> createState() => _ProfileViewState();
 }
 
-class _SettingsViewState extends State<SettingsView> {
+class _ProfileViewState extends State<ProfileView> {
   final ThemeController themeController = Get.find();
   final Color primary = const Color(0xFF00b894);
   bool isDarkMode = false;
@@ -114,6 +114,17 @@ class _SettingsViewState extends State<SettingsView> {
                   );},
                 ),
 
+                _sectionTitle("Settings"),
+                _settingItem(
+                  icon: Icons.schedule,
+                  title: "School Time Schedule",
+                  onTap: () {
+                    Get.to(
+                          () => const SchoolTimeScheduleView(),
+                      transition: Transition.cupertino,
+                    );
+                  },
+                ),
 
                 // SizedBox(height: 2.h),
 
