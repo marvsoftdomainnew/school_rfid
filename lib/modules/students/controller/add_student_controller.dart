@@ -117,7 +117,7 @@ class AddStudentController extends GetxController {
 
       if (response.success == true) {
         ToastUtil.success(response.message ?? "Student added");
-        // 🔄 Refresh list
+        // Refresh list
         Get.find<StudentListController>().fetchStudents();
 
         Get.back();
@@ -125,6 +125,28 @@ class AddStudentController extends GetxController {
         ToastUtil.error(response.message ?? "Failed to add student");
       }
     } on DioException catch (e) {
+      /// HANDLE 422 VALIDATION ERRORS
+      if (e.response?.statusCode == 422) {
+        final data = e.response?.data;
+
+        if (data is Map && data['errors'] is Map) {
+          final errors = data['errors'] as Map;
+
+          if (errors['mobile_number'] != null &&
+              errors['mobile_number'] is List &&
+              errors['mobile_number'].isNotEmpty) {
+            ToastUtil.error(errors['mobile_number'][0].toString());
+          }
+
+          if (errors['rfid_number'] != null &&
+              errors['rfid_number'] is List &&
+              errors['rfid_number'].isNotEmpty) {
+            ToastUtil.error(errors['rfid_number'][0].toString());
+          }
+
+          return;
+        }
+      }
       ToastUtil.error(NetworkExceptions.getErrorMessage(e));
     } finally {
       isLoading.value = false;

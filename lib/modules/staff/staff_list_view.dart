@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:schoolmsrfid/modules/staff/controller/staff_list_controller.dart';
 import 'package:schoolmsrfid/modules/staff/staff_detail_view.dart';
 import 'package:sizer/sizer.dart';
+import '../../core/utils/toast_util.dart';
 import '../../theme/app_colors.dart';
 import 'add_staff_view.dart';
 
@@ -42,6 +43,11 @@ class _StaffListViewState extends State<StaffListView>
     searchController.dispose();
     super.dispose();
   }
+  Future<void> _onRefresh() async {
+    await controller.fetchStaffs();
+    ToastUtil.success("List updated");
+  }
+
 
   // ================= FILTER =================
   void _applyFilters() {
@@ -272,32 +278,35 @@ class _StaffListViewState extends State<StaffListView>
       return AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
-          return GridView.builder(
-            padding: EdgeInsets.all(4.w),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 5.w,
-              mainAxisSpacing: 1.h,
-              childAspectRatio: 0.75,
-            ),
-            itemCount: controller.filteredStaffs.length,
-            itemBuilder: (context, index) {
-              final staff = controller.filteredStaffs[index];
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: GridView.builder(
+              padding: EdgeInsets.all(4.w),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 5.w,
+                mainAxisSpacing: 1.h,
+                childAspectRatio: 0.75,
+              ),
+              itemCount: controller.filteredStaffs.length,
+              itemBuilder: (context, index) {
+                final staff = controller.filteredStaffs[index];
 
-              return TweenAnimationBuilder<double>(
-                duration: Duration(milliseconds: 300 + (index * 15)),
-                tween: Tween(begin: 0.0, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: value,
-                    child: Opacity(
-                      opacity: value,
-                      child: _buildStaffItem(staff, index),
-                    ),
-                  );
-                },
-              );
-            },
+                return TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 300 + (index * 15)),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: Opacity(
+                        opacity: value,
+                        child: _buildStaffItem(staff, index),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           );
         },
       );

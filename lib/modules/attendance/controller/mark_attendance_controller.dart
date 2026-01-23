@@ -10,9 +10,9 @@ class MarkAttendanceController extends GetxController {
 
   final isProcessing = false.obs;
 
-  /// 🔥 Call when RFID is fully read
+  /// Call when RFID is fully read
   Future<void> markAttendance(String rfidNumber) async {
-    if (isProcessing.value) return; // ⛔ prevent double hit
+    if (isProcessing.value) return; // prevent double hit
 
     isProcessing.value = true;
 
@@ -32,9 +32,22 @@ class MarkAttendanceController extends GetxController {
         );
       }
     } on DioException catch (e) {
-      ToastUtil.error(
-        NetworkExceptions.getErrorMessage(e),
-      );
+      if (e.response?.statusCode == 409) {
+        final data = e.response?.data;
+
+        if (data is Map<String, dynamic>) {
+          ToastUtil.error(
+            data['message'] ?? "Attendance already completed",
+          );
+        } else {
+          ToastUtil.error("Attendance already completed");
+        }
+      } else {
+        // OTHER API ERRORS
+        ToastUtil.error(
+          NetworkExceptions.getErrorMessage(e),
+        );
+      }
     } catch (_) {
       ToastUtil.error("Something went wrong");
     } finally {
