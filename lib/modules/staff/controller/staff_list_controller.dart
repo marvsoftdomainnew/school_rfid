@@ -34,6 +34,8 @@ class StaffListController extends GetxController {
             'mobile': r.mobileNumber ?? '',
             'rfid': r.rfidNumber ?? '',
             'avatar': r.avatarUrl,
+            'father_name': r.fatherName ?? '',
+            'mother_name': r.motherName ?? '',
           };
         }).toList();
 

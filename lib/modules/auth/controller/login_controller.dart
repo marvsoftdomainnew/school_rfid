@@ -78,6 +78,10 @@ class LoginController extends GetxController {
         if (response.token != null) {
           await prefs.setString(AppKeys.token, response.token!);
         }
+        if (response.user?.mobileNumber != null &&
+            response.user!.mobileNumber!.isNotEmpty) {
+          await prefs.setString(AppKeys.mobileNumber, response.user!.mobileNumber!,);
+        }
         await prefs.setBool(AppKeys.isLogin, true);
         ToastUtil.success("Successfully logged in");
         Get.offAllNamed(AppRoutes.dashboard);

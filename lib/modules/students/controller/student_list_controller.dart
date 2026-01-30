@@ -33,6 +33,8 @@ class StudentListController extends GetxController {
             'section': r.section ?? '',
             'rfid': r.rfidNumber ?? '',
             'mobile': r.mobileNumber ?? '',
+            'father_name': r.fatherName ?? '',
+            'mother_name': r.motherName ?? '',
           };
         }).toList();
 

@@ -8,4 +8,5 @@ class AppKeys {
   static const String currentAddress = "currentAddress";
   static const String street = "street";
   static const String guestAddress = "guest_address";
+  static const mobileNumber = "mobileNumber";
 }

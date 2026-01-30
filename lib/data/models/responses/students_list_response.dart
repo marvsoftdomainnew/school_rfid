@@ -25,7 +25,6 @@ class StudentRecord {
   final int? schoolId;
   final int? staffId;
   final int? studentId;
-
   final String? name;
   final String? fatherName;
   final String? motherName;
@@ -33,7 +32,6 @@ class StudentRecord {
   final String? section;
   final String? mobileNumber;
   final String? rfidNumber;
-
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -63,7 +61,7 @@ class StudentRecord {
       name: json['name'],
       fatherName: json['father_name'],
       motherName: json['mother_name'],
-      studentClass: json['class'], // ⚠️ keyword handled safely
+      studentClass: json['class'],
       section: json['section'],
       mobileNumber: json['mobile_number'],
       rfidNumber: json['rfid_number'],

@@ -4,6 +4,8 @@ import 'package:schoolmsrfid/modules/profile/school_time_schedule_view.dart';
 import 'package:schoolmsrfid/modules/reports/staff_attendance_report_view.dart';
 import 'package:schoolmsrfid/modules/reports/student_attendance_report_view.dart';
 import 'package:sizer/sizer.dart';
+import '../../core/constants/app_keys.dart';
+import '../../core/services/sharedpreferences_service.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/theme_controller.dart';
 import '../auth/controller/logout_controller.dart';
@@ -20,7 +22,24 @@ class _ProfileViewState extends State<ProfileView> {
   final Color primary = const Color(0xFF00b894);
   bool isDarkMode = false;
   final LogoutController logoutController = Get.find();
+  String mobileNumber = "";
 
+  @override
+  void initState() {
+    super.initState();
+    _loadMobile();
+  }
+
+  Future<void> _loadMobile() async {
+    final prefs = await SharedPreferencesService.getInstance();
+    final savedMobile = prefs.getString(AppKeys.mobileNumber);
+
+    if (savedMobile != null && savedMobile.isNotEmpty) {
+      setState(() {
+        mobileNumber = "+91 $savedMobile";
+      });
+    }
+  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -33,10 +52,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.logout,
-                color: Colors.red,
-              ),
+              Icon(Icons.logout, color: Colors.red),
               SizedBox(width: 8),
               const Text("Logout"),
             ],
@@ -49,10 +65,7 @@ class _ProfileViewState extends State<ProfileView> {
               onPressed: () {
                 Navigator.pop(context); // close dialog
               },
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: Colors.grey),
-              ),
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
             ),
             TextButton(
               onPressed: () {
@@ -72,7 +85,6 @@ class _ProfileViewState extends State<ProfileView> {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -95,23 +107,26 @@ class _ProfileViewState extends State<ProfileView> {
                 // ),
                 //
                 // SizedBox(height: 2.h),
-
                 _sectionTitle("Reports"),
                 _settingItem(
                   icon: Icons.badge_outlined,
                   title: "Staff Attendance Report",
-                  onTap: () {Get.to(
-                        () => const StaffAttendanceReportView(),
-                    transition: Transition.cupertino,
-                  );},
+                  onTap: () {
+                    Get.to(
+                      () => const StaffAttendanceReportView(),
+                      transition: Transition.cupertino,
+                    );
+                  },
                 ),
                 _settingItem(
                   icon: Icons.assignment_turned_in_outlined,
                   title: "Student Attendance Report",
-                  onTap: () {Get.to(
-                        () => const StudentAttendanceReportView(),
-                    transition: Transition.cupertino,
-                  );},
+                  onTap: () {
+                    Get.to(
+                      () => const StudentAttendanceReportView(),
+                      transition: Transition.cupertino,
+                    );
+                  },
                 ),
 
                 _sectionTitle("Settings"),
@@ -120,7 +135,7 @@ class _ProfileViewState extends State<ProfileView> {
                   title: "School Time Schedule",
                   onTap: () {
                     Get.to(
-                          () => const SchoolTimeScheduleView(),
+                      () => const SchoolTimeScheduleView(),
                       transition: Transition.cupertino,
                     );
                   },
@@ -133,7 +148,6 @@ class _ProfileViewState extends State<ProfileView> {
                 //   icon: Icons.dark_mode_outlined,
                 //   title: "Dark Mode",
                 // ),
-
                 SizedBox(height: 3.h),
 
                 _sectionTitle("Danger Zone"),
@@ -174,11 +188,7 @@ class _ProfileViewState extends State<ProfileView> {
                 ),
               ],
             ),
-            child: Icon(
-              Icons.person,
-              size: 10.w,
-              color: primary,
-            ),
+            child: Icon(Icons.person, size: 10.w, color: primary),
           ),
           SizedBox(height: 1.5.h),
           Text(
@@ -191,7 +201,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           SizedBox(height: 0.4.h),
           Text(
-            "+91 9876543210",
+            mobileNumber.isNotEmpty ? mobileNumber : "",
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey[600],
@@ -243,11 +253,7 @@ class _ProfileViewState extends State<ProfileView> {
                 color: (iconColor ?? primary).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: iconColor ?? primary,
-                size: 5.w,
-              ),
+              child: Icon(icon, color: iconColor ?? primary, size: 5.w),
             ),
             SizedBox(width: 4.w),
             Expanded(
@@ -260,11 +266,7 @@ class _ProfileViewState extends State<ProfileView> {
                 ),
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey[400]),
           ],
         ),
       ),
@@ -272,10 +274,7 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   // ================= TOGGLE ITEM =================
-  Widget _toggleItem({
-    required IconData icon,
-    required String title,
-  }) {
+  Widget _toggleItem({required IconData icon, required String title}) {
     return Container(
       margin: EdgeInsets.only(bottom: 1.4.h),
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.2.h),
@@ -292,11 +291,7 @@ class _ProfileViewState extends State<ProfileView> {
               color: primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: primary,
-              size: 5.w,
-            ),
+            child: Icon(icon, color: primary, size: 5.w),
           ),
           SizedBox(width: 4.w),
           Expanded(
